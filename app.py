@@ -198,6 +198,7 @@ async def index():
         .pane-title {
             font-weight: 600;
             font-size: 14px;
+            color: var(--toolbar-text);
         }
 
         /* 좌측 코드 영역 */
@@ -278,6 +279,7 @@ async def index():
         #currentFunc {
             font-weight: 600;
             font-size: 12px;
+            color: var(--toolbar-text);
         }
 
         #chartContainer {
@@ -318,6 +320,7 @@ async def index():
         .zoom-label {
             font-size: 12px;
             min-width: 42px;
+            color: var(--toolbar-text);
         }
 
         /* 코드 ↔ 노드 연동: 선택된 노드 하이라이트 (더 진하게) */
