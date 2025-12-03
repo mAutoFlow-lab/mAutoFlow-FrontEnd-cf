@@ -596,6 +596,7 @@ async def index():
 
         let isHelpMode = false;
         let currentBranchShape = "rounded";   // 분기 모양: 기본은 둥근 사각형
+        let savedSourceCode = "";             // HELP 진입 전 코드 저장용
 
         function toggleHelp() {
             const codeArea   = document.getElementById("codeArea");
@@ -606,8 +607,16 @@ async def index():
 
             if (!isHelpMode) {
                 // === HELP 모드 진입 ===
+                // 현재 코드 저장
+                const srcNow = document.getElementById("src");
+                if (srcNow) {
+                    savedSourceCode = srcNow.value;
+                } else {
+                    savedSourceCode = "";
+                }
+
                 isHelpMode = true;
-                btn.textContent = "CODE";   // 버튼 레이블을 CODE로 변경
+                btn.textContent = "CODE";
 
                 codeHeader.innerHTML = "<span>HELP</span>";
                 codeArea.innerHTML = `
@@ -618,35 +627,24 @@ async def index():
             } else {
                 // === CODE 모드 복귀 ===
                 isHelpMode = false;
-                btn.textContent = "HELP";   // 버튼 레이블을 다시 HELP로 변경
+                btn.textContent = "HELP";
 
                 codeHeader.innerHTML = `
                     <span>mAutoFlow</span>
                     <span style="opacity:0.7;">Automatic analysis</span>
                 `;
 
-                // 라인 번호 + textarea 같이 생성
+                // 에디터 다시 만들기
                 codeArea.innerHTML = `
-                    <div id="lineNumbers"></div>
                     <textarea id="src" spellcheck="false" placeholder="Paste your C / pseudo-C code here."></textarea>
                 `;
 
+                // 저장해둔 코드 복원
                 const src = document.getElementById("src");
-                const lineNumbers = document.getElementById("lineNumbers");
+                if (src) {
+                    src.value = savedSourceCode || "";
 
-                // 🔹 라인 번호 함수 재정의 (내부에 다시 만들어도 됨)
-                function updateLineNumbers() {
-                    if (!src || !lineNumbers) return;
-                    const lines = src.value.split("\n").length || 1;
-                    let html = "";
-                    for (let i = 1; i <= lines; i++) {
-                        html += i + "<br>";
-                    }
-                    lineNumbers.innerHTML = html;
-                }
-
-                if (src && lineNumbers) {
-                    // 코드 ↔ 노드 연동
+                    // 기존 이벤트 다시 연결
                     ["click", "keyup", "mouseup"].forEach(ev => {
                         src.addEventListener(ev, updateNodeHighlightFromCaret);
                     });
@@ -655,14 +653,7 @@ async def index():
                         typingTimer = setTimeout(function() {
                             generateFlowchart(true);
                         }, TYPING_DELAY_MS);
-                        updateLineNumbers();  // 입력 시마다 라인 번호 갱신
                     });
-                    src.addEventListener("scroll", () => {
-                        lineNumbers.scrollTop = src.scrollTop;
-                    });
-
-                    // 초기 라인 번호 표시
-                    updateLineNumbers();
                 }
             }
         }
