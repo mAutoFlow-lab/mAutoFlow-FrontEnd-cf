@@ -550,6 +550,58 @@
    
 
         let isHelpMode = false;
+
+        // ==== 무료 사용 제한 (브라우저 기준, 유저당 5회) ====
+        const FREE_LIMIT = 5;
+
+        // 현재 로그인 유저 기준 localStorage 키
+        function getUsageStorageKey() {
+            if (!window.currentUser || !window.currentUser.id) return null;
+            return `autoflow-usage-${window.currentUser.id}`;
+        }
+
+        function getUsageCount() {
+            const key = getUsageStorageKey();
+            if (!key) return 0;
+            try {
+                const raw = localStorage.getItem(key);
+                const n = parseInt(raw, 10);
+                return Number.isNaN(n) ? 0 : n;
+            } catch (e) {
+                return 0;
+            }
+        }
+
+        function setUsageCount(n) {
+            const key = getUsageStorageKey();
+            if (!key) return;
+            try {
+                localStorage.setItem(key, String(n));
+            } catch (e) {
+                // 저장 실패하면 그냥 무시
+            }
+        }
+
+        function incrementUsageCount() {
+            const used = getUsageCount();
+            setUsageCount(used + 1);
+            updateQuotaInfo();
+        }
+
+        function updateQuotaInfo() {
+            const span = document.getElementById("quotaInfo");
+            if (!span) return;
+
+            if (!window.currentUser) {
+                span.textContent = "";
+                return;
+            }
+
+            const used = getUsageCount();
+            const shownUsed = Math.min(used, FREE_LIMIT);
+            span.textContent = `Free uses: ${shownUsed} / ${FREE_LIMIT}`;
+        }
+        
         let currentBranchShape = "rounded";   // 분기 모양: 기본은 둥근 사각형
         let savedSourceCode = "";             // HELP 진입 전 코드 저장용
 
@@ -1179,23 +1231,46 @@
             });
         }
 
-        async function generateFlowchart(auto=false) {
-             const status = document.getElementById("status");
-             // 🔒 로그인 안 되어 있으면 막기
-                    if (!window.currentUser) {
-                        if (status) {
-                             status.textContent = "Please log in to use mAutoFlow.";
-                             status.className = "error";
-                        }
-                        return;
-                    }
+        async function generateFlowchart(auto = false) {
+            const status = document.getElementById("status");
+
+            // 🔒 1) 로그인 안 되어 있으면 막기
+            if (!window.currentUser) {
+                if (status) {
+                    status.textContent = "Please log in to use mAutoFlow.";
+                    status.className = "error";
+                }
+                return;
+            }
+
+            // 🔒 2) 무료 5회 사용 제한 체크
+            const used = getUsageCount();
+            if (used >= FREE_LIMIT) {
+                if (status) {
+                    status.textContent = "Free quota (5 diagrams) used. Thank you for testing mAutoFlow.";
+                    status.className = "error";
+                }
+                const chartInner = document.getElementById("chartInner");
+                const currentFunc = document.getElementById("currentFunc");
+                if (chartInner) {
+                    chartInner.innerHTML = `
+                        <p class="placeholder" style="color:#b91c1c;">
+                            Free usage limit reached. Please contact the developer if you need more runs.
+                        </p>`;
+                }
+                if (currentFunc) {
+                    currentFunc.textContent = "";
+                }
+                return;
+            }
+
             const src = document.getElementById("src").value;
             const chartInner = document.getElementById("chartInner");
             const currentFunc = document.getElementById("currentFunc");
 
             // 새 코드/재생성 시마다 줌을 100%로 초기화
             diagramZoom = 1.0;
-            updateZoomLabel();            
+            updateZoomLabel();
 
             if (!src.trim()) {
                 if (!auto) {
@@ -1238,13 +1313,9 @@
                 const funcName = data.func_name || "";
                 const nodeLines = data.node_lines || {};
 
-                // === 노드 개수 계산 ===
                 const nodeCount = Object.keys(nodeLines).length;
-
-                // node count 전역 저장(나중에 결제 제한 등에 사용)
                 window.__nodeCount = nodeCount;
 
-                // === Automatic analysis → Node: XX 로 변경 ===
                 const codeHeader = document.getElementById("codeHeader");
                 if (codeHeader) {
                     codeHeader.innerHTML = `
@@ -1253,7 +1324,6 @@
                     `;
                 }
 
-                // 노드 -> 라인번호 맵을 전역에 저장 (click 핸들러에서 사용)
                 window.__nodeLines = nodeLines;
 
                 if (errorMsg) {
@@ -1281,10 +1351,11 @@
                 mermaid.init(undefined, element);
 
                 applyDiagramZoom();
-
-                // Mermaid 렌더링 후 노드 클릭 핸들러 연결
                 setTimeout(attachNodeClickHandlers, 50);
-                
+
+                // ✅ 성공적으로 그렸으면 사용량 +1
+                incrementUsageCount();
+
             } catch (err) {
                 console.error(err);
                 status.textContent = "An error occurred during the request.";
@@ -1540,6 +1611,7 @@ void main(void)
                 <button class="btn btn-primary" onclick="generateFlowchart(false)">Regenerate Now</button>
                 <span id="currentFunc"></span>
                 <span id="status"></span>
+                <span id="quotaInfo" style="margin-left:8px; font-size:12px; opacity:0.8;"></span>
             </div>
             <div id="chartContainer">
                 <div id="chartInner">
@@ -1632,6 +1704,9 @@ void main(void)
                 loggedOutDiv.style.display = "inline-flex";
                 loggedInDiv.style.display  = "none";
             }
+
+            // 로그인/로그아웃 시 무료 사용량 표시 갱신
+            updateQuotaInfo();
         }
 
         async function loginWithGoogle() {
@@ -1650,6 +1725,8 @@ void main(void)
             const currentFunc = document.getElementById("currentFunc");
             const chartInner  = document.getElementById("chartInner");
             const codeHeader  = document.getElementById("codeHeader");
+            const quotaInfo = document.getElementById("quotaInfo");
+            if (quotaInfo) quotaInfo.textContent = "";
 
             // 코드 영역 비우기
             if (src) {
