@@ -641,8 +641,8 @@
             }
 
             const used = getUsageCount();
-            const shownUsed = Math.min(used, FREE_LIMIT);
-            span.textContent = `Free uses: ${shownUsed} / ${FREE_LIMIT} (≤ ${FREE_NODE_LIMIT} nodes)`;
+            const shownUsed = Math.min(used, DAILY_FREE_LIMIT);
+            span.textContent = `Free uses: ${shownUsed} / ${DAILY_FREE_LIMIT} (≤ ${FREE_NODE_LIMIT} nodes)`;
         }
         
         let currentBranchShape = "rounded";   // 분기 모양: 기본은 둥근 사각형
