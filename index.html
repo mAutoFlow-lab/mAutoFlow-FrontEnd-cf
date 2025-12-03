@@ -1275,6 +1275,10 @@
         }
 
         async function generateFlowchart(auto = false) {
+            // 🔓 테스트 계정 무제한 허용
+            const TEST_EMAIL = "exitgiveme@gmail.com";
+            const isTestUser = (window.currentUser && window.currentUser.email === TEST_EMAIL);
+            
             const status      = document.getElementById("status");
             const chartInner  = document.getElementById("chartInner");
             const currentFunc = document.getElementById("currentFunc");
@@ -1300,7 +1304,9 @@
 
             // 🔒 하루 사용량 제한 (5회)
             const usage = getTodayUsage();
-            if (usage.count >= DAILY_FREE_LIMIT) {
+            // if (usage.count >= DAILY_FREE_LIMIT) {
+            // 🔓 테스트 계정은 제한 없음
+            if (!isTestUser && usage.count >= DAILY_FREE_LIMIT) {
                 status.textContent =
                     `Daily free limit reached (${DAILY_FREE_LIMIT} diagrams per day, up to ${FREE_NODE_LIMIT} nodes). Please try again tomorrow.`;
                 status.className = "error";
@@ -1361,7 +1367,9 @@
                 }
 
                 // 🔒 무료 버전 노드 제한
-                if (nodeCount > FREE_NODE_LIMIT) {
+                // if (nodeCount > FREE_NODE_LIMIT) {
+                // 🔓 테스트 계정은 노드 제한 없음
+                if (!isTestUser && nodeCount > FREE_NODE_LIMIT) {
                     status.textContent =
                         `This function has ${nodeCount} nodes, exceeding the free limit (${FREE_NODE_LIMIT}).`;
                     status.className = "error";
@@ -1383,8 +1391,10 @@
 
                 // ⭐ 여기서만 오늘 사용량 증가
                 let usageNow = getTodayUsage();
-                usageNow.count += 1;
-                saveTodayUsage(usageNow);
+                if (!isTestUser) {
+                    usageNow.count += 1;
+                    saveTodayUsage(usageNow);
+                }
 
                 status.textContent =
                     `${auto ? "Refresh Complete." : "Flowchart creation complete."} (Today: ${usageNow.count}/${DAILY_FREE_LIMIT})`;
