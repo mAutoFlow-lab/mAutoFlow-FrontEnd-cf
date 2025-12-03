@@ -1246,6 +1246,21 @@ async def index():
                 const funcName = data.func_name || "";
                 const nodeLines = data.node_lines || {};
 
+                // === 노드 개수 계산 ===
+                const nodeCount = Object.keys(nodeLines).length;
+
+                // node count 전역 저장(나중에 결제 제한 등에 사용)
+                window.__nodeCount = nodeCount;
+
+                // === Automatic analysis → Node: XX 로 변경 ===
+                const codeHeader = document.getElementById("codeHeader");
+                if (codeHeader) {
+                    codeHeader.innerHTML = `
+                        <span>mAutoFlow</span>
+                        <span style="opacity:0.7;">Nodes: ${nodeCount}</span>
+                    `;
+                }
+
                 // 노드 -> 라인번호 맵을 전역에 저장 (click 핸들러에서 사용)
                 window.__nodeLines = nodeLines;
 
