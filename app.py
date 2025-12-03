@@ -222,7 +222,23 @@ async def index():
         #codeArea {
             flex: 1;
             padding: 6px;
+            display: flex;    /* ← 라인번호 + textarea 가 가로로 배치되도록 */
         }
+
+        #lineNumbers {
+            width: 40px;  /* 라인 번호 영역 너비 */
+            padding: 6px 4px;
+            text-align: right;
+            color: var(--code-text);
+            background: var(--bg-code);
+            border-right: 1px solid var(--code-border);
+            font-family: "Consolas", "Roboto Mono", monospace;
+            font-size: 13px;
+            line-height: 1.4;
+            user-select: none;        /* 라인 번호 드래그 방지 */
+            overflow: hidden;
+        }
+        
         #src {
             width: 100%;
             height: 100%;
@@ -234,6 +250,7 @@ async def index():
             font-family: "Consolas", "Roboto Mono", monospace;
             font-size: 13px;  /* 코드 글자 크기 (너무 크지 않게) */
             line-height: 1.4;
+            flex: 1;                  /* ← 남은 영역 꽉 채우기 */
         }
 
         /* 우측 플로우차트 영역 */
@@ -608,14 +625,28 @@ async def index():
                     <span style="opacity:0.7;">Automatic analysis</span>
                 `;
 
-                // 새 에디터 생성 (간단한 placeholder만 사용)
+                // 라인 번호 + textarea 같이 생성
                 codeArea.innerHTML = `
+                    <div id="lineNumbers"></div>
                     <textarea id="src" spellcheck="false" placeholder="Paste your C / pseudo-C code here."></textarea>
                 `;
 
-                // 새 textarea에 기본 이벤트 다시 연결 (하이라이트 + 자동 갱신)
                 const src = document.getElementById("src");
-                if (src) {
+                const lineNumbers = document.getElementById("lineNumbers");
+
+                // 🔹 라인 번호 함수 재정의 (내부에 다시 만들어도 됨)
+                function updateLineNumbers() {
+                    if (!src || !lineNumbers) return;
+                    const lines = src.value.split("\n").length || 1;
+                    let html = "";
+                    for (let i = 1; i <= lines; i++) {
+                        html += i + "<br>";
+                    }
+                    lineNumbers.innerHTML = html;
+                }
+
+                if (src && lineNumbers) {
+                    // 코드 ↔ 노드 연동
                     ["click", "keyup", "mouseup"].forEach(ev => {
                         src.addEventListener(ev, updateNodeHighlightFromCaret);
                     });
@@ -624,7 +655,14 @@ async def index():
                         typingTimer = setTimeout(function() {
                             generateFlowchart(true);
                         }, TYPING_DELAY_MS);
+                        updateLineNumbers();  // 입력 시마다 라인 번호 갱신
                     });
+                    src.addEventListener("scroll", () => {
+                        lineNumbers.scrollTop = src.scrollTop;
+                    });
+
+                    // 초기 라인 번호 표시
+                    updateLineNumbers();
                 }
             }
         }
@@ -1339,6 +1377,27 @@ async def index():
 
         document.addEventListener("DOMContentLoaded", function() {
             const src = document.getElementById("src");
+            const lineNumbers = document.getElementById("lineNumbers");
+
+            // 라인 번호 업데이트 함수
+            function updateLineNumbers() {
+                if (!src || !lineNumbers) return;
+                const lines = src.value.split("\n").length || 1;
+                let html = "";
+                for (let i = 1; i <= lines; i++) {
+                    html += i + "<br>";
+                }
+                lineNumbers.innerHTML = html;
+            }
+
+            // 이벤트 연결 (입력/스크롤)
+            if (src && lineNumbers) {
+                src.addEventListener("input", updateLineNumbers);
+                src.addEventListener("scroll", () => {
+                    lineNumbers.scrollTop = src.scrollTop;  // 스크롤 동기화
+                });
+                updateLineNumbers(); // 초기 1,2,3,... 표시
+            }
 
             // ----- 초기 테마 로딩 -----
             let savedTheme = "classic";
@@ -1481,6 +1540,7 @@ async def index():
                     <span style="opacity:0.7;">Automatic analysis</span>
                 </div>
                 <div id="codeArea">
+                    <div id="lineNumbers"></div>
                     <textarea id="src" spellcheck="false" placeholder="Example:
 void main(void)
 {
