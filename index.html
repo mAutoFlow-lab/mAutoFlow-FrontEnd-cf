@@ -789,7 +789,7 @@
         function downloadAsSVG() {
             const svg = document.querySelector("#chartInner svg");
             if (!svg) {
-                alert("다운로드할 플로우차트가 없습니다.");
+                alert("There is no flowchart to download yet.");
                 return;
             }
 
@@ -871,6 +871,61 @@
             applyDiagramZoom();       // ← 100%로
             updateZoomLabel();
         }
+
+        // ============================
+        //  Status / Error helpers
+        // ============================
+        function setStatus(type, message) {
+            const status = document.getElementById("status");
+            if (!status) return;
+
+            // type: "success" | "error" | "info" | "idle"
+            let icon = "";
+            if (type === "success") icon = "✅";
+            else if (type === "error") icon = "❌";
+            else if (type === "info") icon = "ℹ️";
+
+            status.className = "";  // 기존 클래스 제거
+            if (type === "success") status.classList.add("success");
+            if (type === "error")   status.classList.add("error");
+
+            status.textContent = icon ? `${icon} ${message}` : message;
+        }
+
+        // 백엔드에서 내려오는 에러 코드를 보기 좋게 매핑
+        function mapBackendError(errorCode, rawError) {
+            const msg  = (rawError || "").toString();
+            const code = (errorCode || "").toString().toUpperCase();
+
+            // 1) 명시적 코드 우선
+            if (code === "NO_FUNCTION") {
+                return "No function body was found in the code.";
+            }
+            if (code === "TOO_MANY_NODES") {
+                return "The function is too large to analyze (too many flowchart nodes).";
+            }
+            if (code === "UNSUPPORTED_SYNTAX") {
+                return "The code uses syntax that is not supported yet (for example, 'goto' inside 'switch').";
+            }
+
+            // 2) 코드가 없으면 메시지 패턴으로 추론
+            if (/no function/i.test(msg)) {
+                return "No function body was found in the code.";
+            }
+            if (/too many nodes/i.test(msg)) {
+                return "The function is too large to analyze (too many flowchart nodes).";
+            }
+            if (/unsupported/i.test(msg)) {
+                return "The code uses syntax that is not supported yet.";
+            }
+
+            // 3) 일단 알 수 없는 에러는 원문을 괄호로 남겨줌
+            if (msg) {
+                return `Failed to generate the flowchart. (${msg})`;
+            }
+            return "Failed to generate the flowchart due to an unknown error.";
+        }
+
 
         // ============================
         //  코드 라인 하이라이트 관련 함수들
@@ -1251,8 +1306,7 @@
 
             // ✅ 로그인 상태 확인
             if (!window.currentUser) {
-                status.textContent = "Please log in to use mAutoFlow.";
-                status.className   = "error";
+                setStatus("error", "Please log in to use mAutoFlow.");
                 return;
             }
 
@@ -1262,8 +1316,11 @@
             const srcEl = document.getElementById("src");
             const src = srcEl ? srcEl.value.trim() : "";
             if (!src) {
-                status.textContent = auto ? "" : "Enter the C code on the left.";
-                status.className   = auto ? "" : "error";
+                if (!auto) {
+                    setStatus("info", "Enter your C code on the left to generate a flowchart.");
+                } else {
+                    setStatus("idle", "");
+                }
                 currentFunc.textContent = "";
                 chartInner.innerHTML = `
                     <p class="placeholder">
@@ -1277,19 +1334,18 @@
             if (!isTestUser) {
                 usage = getTodayUsage();
                 if (usage.count >= DAILY_FREE_LIMIT) {
-                    status.textContent =
-                        `Daily free limit reached (${DAILY_FREE_LIMIT} diagrams per day, up to ${FREE_NODE_LIMIT} nodes). Please try again tomorrow.`;
-                    status.className = "error";
+                    setStatus(
+                        "error",
+                        `Daily free limit reached (${DAILY_FREE_LIMIT} diagrams per day, up to ${FREE_NODE_LIMIT} nodes). Please try again tomorrow.`
+                    );
                     return;
                 }
             }
-
             // 줌 초기화
             diagramZoom = 1.0;
             updateZoomLabel();
 
-            status.textContent = auto ? "Automatically updating..." : "Creating a flowchart...";
-            status.className   = "";
+            setStatus("info", auto ? "Automatically updating the flowchart..." : "Creating the flowchart...");
             chartInner.innerHTML = "";
 
             const formData = new FormData();
@@ -1303,8 +1359,7 @@
                 });
 
                 if (!res.ok) {
-                    status.textContent = "Server error: " + res.status;
-                    status.className   = "error";
+                    setStatus("error", `Server error (${res.status}). Please try again later.`);
                     chartInner.innerHTML = '<p class="placeholder">A server error occurred.</p>';
                     currentFunc.textContent = "";
                     return;
@@ -1313,13 +1368,14 @@
                 const data = await res.json();
                 const mermaidCode = data.mermaid || "";
                 const errorMsg    = data.error || "";
+                const errorCode   = data.error_code || "";   // 없으면 빈 문자열
                 const funcName    = data.func_name || "";
                 const nodeLines   = data.node_lines || {};
 
                 if (errorMsg) {
-                    status.textContent = "Error: " + errorMsg;
-                    status.className   = "error";
-                    chartInner.innerHTML = `<p class="placeholder" style="color:#b91c1c;">${errorMsg}</p>`;
+                    const uiMsg = mapBackendError(errorCode, errorMsg);
+                    setStatus("error", uiMsg);
+                    chartInner.innerHTML = `<p class="placeholder" style="color:#b91c1c;">${uiMsg}</p>`;
                     currentFunc.textContent = "";
                     return;
                 }
@@ -1337,13 +1393,12 @@
 
                 // ✅ 노드 제한 (테스트 계정은 무제한)
                 if (!isTestUser && nodeCount > FREE_NODE_LIMIT) {
-                    status.textContent =
-                        `This function has ${nodeCount} nodes, exceeding the free limit (${FREE_NODE_LIMIT}).`;
-                    status.className = "error";
+                    const msg = `This function has ${nodeCount} nodes. The free tier supports up to ${FREE_NODE_LIMIT} nodes per diagram.`;
+                    setStatus("error", msg);
 
                     chartInner.innerHTML = `
                         <p class="placeholder" style="color:#b91c1c;">
-                            Free version supports up to ${FREE_NODE_LIMIT} nodes.
+                            Free tier supports up to ${FREE_NODE_LIMIT} nodes per diagram.
                         </p>`;
                     currentFunc.textContent = "";
                     return;
@@ -1380,9 +1435,9 @@
 
             } catch (err) {
                 console.error(err);
-                status.textContent = "An error occurred during the request.";
-                status.className   = "error";
-                chartInner.innerHTML = `<p class="placeholder" style="color:#b91c1c;">An error occurred during the request.</p>`;
+                const msg = "An unexpected error occurred while talking to the server. Please try again.";
+                setStatus("error", msg);
+                chartInner.innerHTML = `<p class="placeholder" style="color:#b91c1c;">${msg}</p>`;
                 currentFunc.textContent = "";
             }
         }
