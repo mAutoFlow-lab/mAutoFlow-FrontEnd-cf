@@ -1359,8 +1359,33 @@
             formData.append("branch_shape", currentBranchShape);
 
             try {
+                // ============================================
+                // ① Supabase에서 access_token 가져오기
+                // ============================================
+                let accessToken = null;
+                try {
+                    const { data, error } = await supabase.auth.getSession();
+                    if (!error && data?.session?.access_token) {
+                        accessToken = data.session.access_token;
+                    }
+                } catch (e) {
+                    console.warn("Failed to get Supabase session", e);
+                }
+
+                // ② fetch 헤더 구성
+                const headers = {};
+                if (accessToken) {
+                    headers["Authorization"] = `Bearer ${accessToken}`;
+                    // 백엔드가 읽을 수 있도록 폼 필드에도 같이 넣어준다
+                    formData.append("access_token", accessToken);
+                }
+                // ============================================
+                // 여기까지가 추가되는 부분
+                // ============================================
+
                 const res = await fetch(API_BASE + "/api/convert_text", {
                     method: "POST",
+                    headers,      // 여기에 headers 추가!
                     body: formData
                 });
 
