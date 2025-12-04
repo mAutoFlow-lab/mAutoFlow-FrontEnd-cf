@@ -1796,7 +1796,8 @@ void main(void)
             await supabase.auth.signInWithOAuth({
                 provider: "google",
                 options: {
-                    redirectTo: "https://mautoflow-lab.netlify.app",  // Netlify 실제 URL
+                    // redirectTo: "https://mautoflow-lab.netlify.app",  // Netlify 실제 URL
+                    redirectTo: "https://mautoflow-frontend.pages.dev",  // Cloudflare URL
                     queryParams: {
                         // 매번 계정 선택 화면 강제
                         prompt: "select_account"
