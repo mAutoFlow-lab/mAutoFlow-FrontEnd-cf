@@ -691,9 +691,15 @@
                 isHelpMode = false;
                 btn.textContent = "HELP";
 
+                // 이전에 계산된 노드 개수가 있으면 그대로 복원
+                let rightText = "Automatic analysis";
+                if (typeof window.__nodeCount === "number" && window.__nodeCount > 0) {
+                    rightText = `Nodes: ${window.__nodeCount}`;
+                }
+
                 codeHeader.innerHTML = `
                     <span>mAutoFlow</span>
-                    <span style="opacity:0.7;">Automatic analysis</span>
+                    <span style="opacity:0.7;">${rightText}</span>
                 `;
 
                 // 에디터 다시 만들기
