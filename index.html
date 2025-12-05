@@ -1383,18 +1383,44 @@
                         accessToken.slice(0, 20) + "..."   // 앞 20글자만 찍어서 길이 확인
                     );
                     formData.append("access_token", accessToken);
+                    // 추가: user_id / user_email
+                    if (window.currentUser) {
+                        formData.append("user_id", window.currentUser.id);
+                        formData.append("user_email", window.currentUser.email || "");
+                    }
                 } else {
                     setStatus("error", "Login session not found. Please log in again.");
                     return;
                 }
 
-                // Authorization 헤더는 굳이 필요 없음 → 빼버려도 됨
                 const res = await fetch(API_BASE + "/api/convert_text", {
                     method: "POST",
                     body: formData
                 });
 
                 if (!res.ok) {
+                    // 429면 하루 무료 사용량 초과일 가능성이 높음
+                    if (res.status === 429) {
+                        let data = {};
+                        try {
+                            data = await res.json();
+                        } catch (_) {}
+
+                        if (data.detail === "DAILY_LIMIT_EXCEEDED") {
+                            setStatus(
+                                "error",
+                                `Daily free limit reached (${DAILY_FREE_LIMIT} diagrams per day, up to ${FREE_NODE_LIMIT} nodes). Please try again tomorrow.`
+                            );
+                            chartInner.innerHTML = `
+                                <p class="placeholder" style="color:#b91c1c;">
+                                    Daily free limit reached. Please try again tomorrow.
+                                </p>`;
+                            currentFunc.textContent = "";
+                            return;
+                        }
+                    }
+
+                    // 그 외 일반 서버 에러 처리
                     setStatus("error", `Server error (${res.status}). Please try again later.`);
                     chartInner.innerHTML = '<p class="placeholder">A server error occurred.</p>';
                     currentFunc.textContent = "";
@@ -1427,7 +1453,7 @@
                         <span style="opacity:0.7;">Nodes: ${nodeCount}</span>`;
                 }
 
-                // ✅ 노드 제한 (테스트 계정은 무제한)
+                // 노드 제한 (테스트 계정은 무제한)
                 if (!isTestUser && nodeCount > FREE_NODE_LIMIT) {
                     const msg = `This function has ${nodeCount} nodes. The free tier supports up to ${FREE_NODE_LIMIT} nodes per diagram.`;
                     setStatus("error", msg);
@@ -1446,7 +1472,7 @@
                 applyDiagramZoom();
                 setTimeout(attachNodeClickHandlers, 50);
 
-                // ✅ 사용량 증가 / 메시지 표시
+                // 사용량 증가 / 메시지 표시
                 let usageNow = getTodayUsage();
 
                 // 테스트 계정이 아니고, 이전에 카운트한 코드와 "내용이 다를 때"만 +1
