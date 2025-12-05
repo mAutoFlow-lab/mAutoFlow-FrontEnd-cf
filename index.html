@@ -1548,12 +1548,8 @@
 
                 // 사용량 증가 (클라이언트 기준, 테스트 계정 제외)
                 if (!isTestUser) {
-                    const usageNow = getTodayUsage();
-                    if (src !== lastCountedSource) {
-                        const newCount = usageNow.count + 1;
-                        saveTodayUsage({ date: usageNow.date, count: newCount });
-                        lastCountedSource = src;
-                    }
+                    // 같은 코드인지 비교 용도만 필요하면 이 정도만
+                    lastCountedSource = src;
                 }
 
                 // 사용량 증가 없이, 메시지만 표시
