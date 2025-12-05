@@ -1339,6 +1339,9 @@
             let usage = { count: 0 };
             if (!isTestUser) {
                 usage = getTodayUsage();
+                // 이제 백엔드에서 5회 제한을 걸 것이므로
+                // 프론트에서는 선제 차단하지 않는다.
+                /*
                 if (usage.count >= DAILY_FREE_LIMIT) {
                     setStatus(
                         "error",
@@ -1346,8 +1349,8 @@
                     );
                     return;
                 }
-            }
-            // 줌 초기화
+                */
+            }            // 줌 초기화
             diagramZoom = 1.0;
             updateZoomLabel();
 
