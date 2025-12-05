@@ -641,20 +641,19 @@
             if (!span) return;
 
             if (!window.currentUser) {
+                // 로그아웃 상태에서는 아무 것도 안 보여 줌
                 span.textContent = "";
                 return;
             }
 
             // 테스트 계정이면 무제한 안내
             if (window.currentUser.email === TEST_EMAIL) {
-                span.textContent = "Free uses: unlimited (test account)";
+                span.textContent = "Free tier: unlimited (test account).";
                 return;
             }
 
-            // 오늘 날짜 기준 사용량 표시
-            const usage = getTodayUsage();
-            span.textContent =
-                `Free uses: ${usage.count} / ${DAILY_FREE_LIMIT} (≤ ${FREE_NODE_LIMIT} nodes)`;
+            // 일반 계정: 숫자 없이 정책만 안내
+            span.textContent = "Free tier: 5 diagrams/day (≤ 20 nodes).";
         }
         
         let currentBranchShape = "rounded";   // 분기 모양: 기본은 둥근 사각형
@@ -897,6 +896,29 @@
 
             status.textContent = icon ? `${icon} ${message}` : message;
         }
+
+        async function fetchBackendVersion() {
+            const el = document.getElementById("backendVersion");
+            if (!el) return;
+
+            try {
+                const res = await fetch(API_BASE + "/version");
+                if (!res.ok) {
+                    throw new Error("HTTP " + res.status);
+                }
+                const data = await res.json();
+
+                const ver = data.version || "unknown";
+                const daily = data.daily_free_limit ?? DAILY_FREE_LIMIT;
+                const nodeLimit = data.free_node_limit ?? FREE_NODE_LIMIT;
+
+                el.textContent = `Backend: ${ver}`;
+                el.title = `Daily limit: ${daily} diagrams/day, ≤ ${nodeLimit} nodes`;
+            } catch (e) {
+                console.warn("Failed to fetch backend version:", e);
+                // 실패해도 UI 깨지진 않게 그냥 무시
+            }
+        }         
 
         // 백엔드에서 내려오는 에러 코드를 보기 좋게 매핑
         function mapBackendError(errorCode, rawError) {
@@ -1310,13 +1332,13 @@
             const chartInner  = document.getElementById("chartInner");
             const currentFunc = document.getElementById("currentFunc");
 
-            // ✅ 로그인 상태 확인
+            // 로그인 상태 확인
             if (!window.currentUser) {
                 setStatus("error", "Please log in to use mAutoFlow.");
                 return;
             }
 
-            // ✅ 테스트 계정 여부
+            // 테스트 계정 여부
             const isTestUser = (window.currentUser.email === TEST_EMAIL);
 
             const srcEl = document.getElementById("src");
@@ -1335,22 +1357,6 @@
                 return;
             }
 
-            // ✅ 하루 사용량 제한 (테스트 계정은 완전 제외)
-            let usage = { count: 0 };
-            if (!isTestUser) {
-                usage = getTodayUsage();
-                // 이제 백엔드에서 5회 제한을 걸 것이므로
-                // 프론트에서는 선제 차단하지 않는다.
-                /*
-                if (usage.count >= DAILY_FREE_LIMIT) {
-                    setStatus(
-                        "error",
-                        `Daily free limit reached (${DAILY_FREE_LIMIT} diagrams per day, up to ${FREE_NODE_LIMIT} nodes). Please try again tomorrow.`
-                    );
-                    return;
-                }
-                */
-            }            // 줌 초기화
             diagramZoom = 1.0;
             updateZoomLabel();
 
@@ -1475,27 +1481,22 @@
                 applyDiagramZoom();
                 setTimeout(attachNodeClickHandlers, 50);
 
-                // 사용량 증가 / 메시지 표시
-                let usageNow = getTodayUsage();
-
-                // 테스트 계정이 아니고, 이전에 카운트한 코드와 "내용이 다를 때"만 +1
-                if (!isTestUser && src !== lastCountedSource) {
-                    usageNow.count += 1;
-                    saveTodayUsage(usageNow);
-                    lastCountedSource = src;   // 이번 코드를 기준으로 기억
-                }
-
+                // 사용량 증가 없이, 메시지만 표시
                 if (!isTestUser) {
-                    status.textContent =
-                        `${auto ? "Refresh Complete." : "Flowchart creation complete."} (Today: ${usageNow.count}/${DAILY_FREE_LIMIT})`;
+                    setStatus(
+                        "success",
+                        "Refresh Complete. Free tier: 5 diagrams/day, ≤ 20 nodes."
+                    );
                 } else {
-                    status.textContent =
-                        `${auto ? "Refresh Complete." : "Flowchart creation complete."} (Test account: unlimited)`;
+                    setStatus(
+                        "success",
+                        `${auto ? "Refresh Complete." : "Flowchart creation complete."} (Test account: unlimited)`
+                    );
                 }
-                status.className = "success";
+
                 currentFunc.textContent = funcName ? `Function: ${funcName}()` : "";
 
-                // 상단 사용량 표시도 같이 갱신
+                // 상단 무료 정책 안내 갱신
                 updateQuotaInfo();
 
             } catch (err) {
@@ -1680,7 +1681,10 @@
             // 코드 클릭/이동 시 → 해당 라인 노드 하이라이트
             src.addEventListener("click", updateNodeHighlightFromCaret);
             src.addEventListener("keyup", updateNodeHighlightFromCaret);
-            src.addEventListener("mouseup", updateNodeHighlightFromCaret);    
+            src.addEventListener("mouseup", updateNodeHighlightFromCaret);
+
+            // 백엔드 버전 정보 표시
+            fetchBackendVersion();
         });
     </script>
 </head>
@@ -1705,6 +1709,17 @@
             <button class="btn-settings" onclick="downloadDiagram()">DOWNLOAD</button>
             <button class="btn-settings" onclick="openSettings()">SETTINGS</button>
             <button id="helpToggleBtn" class="btn-settings" onclick="toggleHelp()">HELP</button>
+        </div>
+        <div class="topbar-right">
+            <!--  로그인 영역 -->
+            ...
+            <!--  로그인 영역 끝 --> 	
+            <button class="btn-settings" onclick="downloadDiagram()">DOWNLOAD</button>
+            <button class="btn-settings" onclick="openSettings()">SETTINGS</button>
+            <button id="helpToggleBtn" class="btn-settings" onclick="toggleHelp()">HELP</button>
+
+            <!-- 백엔드 버전 표시 -->
+            <span id="backendVersion" style="margin-left:8px; font-size:11px; opacity:0.75;"></span>
         </div>
     </header>
     <div class="main">
@@ -1876,7 +1891,9 @@ void main(void)
             const chartInner  = document.getElementById("chartInner");
             const codeHeader  = document.getElementById("codeHeader");
             const quotaInfo = document.getElementById("quotaInfo");
-            if (quotaInfo) quotaInfo.textContent = "";
+            if (quotaInfo) {
+              quotaInfo.textContent = "Free tier: up to 5 diagrams/day (≤ 20 nodes).";
+            }
 
             // 코드 영역 비우기
             if (src) {
