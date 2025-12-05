@@ -107,11 +107,6 @@
             opacity: 0.85;
         }
 
-        .topbar-right {
-            font-size: 12px;
-            opacity: 0.8;
-        }
-
         .main {
             flex: 1;
             display: flex;
@@ -310,12 +305,14 @@
             fill: #000000;
         }
 
-        .topbar-right {
+        ..topbar-right {
             display: flex;
             align-items: center;
             gap: 8px;
             font-size: 12px;
             opacity: 0.9;
+            flex-wrap: nowrap;    /* 버튼 줄바꿈 방지 */
+            white-space: nowrap;  /* 텍스트 줄바꿈 방지 */
         }
 
         .btn-settings {
@@ -386,6 +383,10 @@
     <script>
         const API_BASE = "https://mautoflow-backend.onrender.com";
 	mermaid.initialize({ startOnLoad: false });
+
+	// 서버에서 내려준 사용량 / 한도 (없으면 null)
+        window.__serverUsageCount = null;
+        window.__dailyFreeLimit = null;
 
 	let lastCountedSource = "";   // 마지막으로 사용량을 올렸던 소스 코드
 
@@ -641,23 +642,31 @@
             if (!span) return;
 
             if (!window.currentUser) {
-                // 로그아웃 상태에서는 아무 것도 안 보여 줌
                 span.textContent = "";
+                span.title = "";
                 return;
             }
 
-            // 테스트 계정이면 무제한 안내
+            // 테스트 계정: 숫자 대신 무제한 안내
             if (window.currentUser.email === TEST_EMAIL) {
                 span.textContent = "Free tier: unlimited (test account).";
+                span.title = "Test account is not subject to daily limits.";
                 return;
             }
 
-            // 일반 계정: 오늘 사용 횟수 (클라이언트 기준) 표시
-            const usage = getTodayUsage();
-            const safeCount = Math.min(usage.count, DAILY_FREE_LIMIT);  // 9/5 같은 것 방지
+            // 서버에서 아직 아무 정보도 안 받은 상태
+            if (window.__serverUsageCount == null || window.__dailyFreeLimit == null) {
+                span.textContent = "Free tier: server-enforced (e.g. 5 diagrams/day, ≤ 20 nodes).";
+                span.title = "Daily limit is enforced on the server.";
+                return;
+            }
 
-            span.textContent = `Today: ${safeCount} / ${DAILY_FREE_LIMIT} (≤ ${FREE_NODE_LIMIT} nodes)`;
-            span.title = "Client-side estimate. The real limit is enforced on the server.";
+            // 서버 기준 사용량 표시
+            const count = window.__serverUsageCount;
+            const limit = window.__dailyFreeLimit;
+
+            span.textContent = `Today: ${count} / ${limit} (≤ ${FREE_NODE_LIMIT} nodes)`;
+            span.title = "This usage count is returned from the server.";
         }
         
         let currentBranchShape = "rounded";   // 분기 모양: 기본은 둥근 사각형
@@ -1417,29 +1426,57 @@
                         data = await res.json();
                     } catch (_) {}
 
-                    // 429: 일일 제한
-                    if (res.status === 429 && data.detail === "DAILY_LIMIT_EXCEEDED") {
-                        const today = getTodayKey();
-                        saveTodayUsage({ date: today, count: DAILY_FREE_LIMIT });
-                        updateQuotaInfo();
+                    // 429: 하루 무료 사용량 초과
+                    if (res.status === 429) {
+                        let detail = data.detail;
 
-                        setStatus(
-                            "error",
-                            `Daily free limit reached (${DAILY_FREE_LIMIT} diagrams per day, up to ${FREE_NODE_LIMIT} nodes). Please try again tomorrow.`
-                        );
-                        chartInner.innerHTML = `
-                            <p class="placeholder" style="color:#b91c1c;">
-                                Daily free limit reached. Please try again tomorrow.
-                            </p>`;
-                        currentFunc.textContent = "";
-                        return;
+                        // detail 이 문자열이든 객체든 모두 처리
+                        let code = null;
+                        let usageFromServer = null;
+                        let limitFromServer = null;
+
+                        if (typeof detail === "string") {
+                            code = detail;
+                        } else if (detail && typeof detail === "object") {
+                            code = detail.code || detail.detail || "";
+                            if (typeof detail.usage_count === "number") {
+                                usageFromServer = detail.usage_count;
+                            }
+                            if (typeof detail.daily_free_limit === "number") {
+                                limitFromServer = detail.daily_free_limit;
+                            }
+                        }
+
+                        code = (code || "").toString().toUpperCase();
+
+                        if (code === "DAILY_LIMIT_EXCEEDED") {
+                            if (!isTestUser) {
+                                if (usageFromServer != null) {
+                                    window.__serverUsageCount = usageFromServer;
+                                }
+                                if (limitFromServer != null) {
+                                    window.__dailyFreeLimit = limitFromServer;
+                                }
+                                updateQuotaInfo();
+                            }
+
+                            setStatus(
+                                "error",
+                                `Daily free limit reached (${window.__dailyFreeLimit ?? DAILY_FREE_LIMIT} diagrams per day, up to ${FREE_NODE_LIMIT} nodes). Please try again tomorrow.`
+                            );
+                            chartInner.innerHTML = `
+                                <p class="placeholder" style="color:#b91c1c;">
+                                    Daily free limit reached. Please try again tomorrow.
+                                </p>`;
+                            currentFunc.textContent = "";
+                            return;
+                        }
                     }
 
-                    // 노드 수 초과 에러 (백엔드가 400 + TOO_MANY_NODES 보낸 경우)
+                    // 📌 노드 초과 에러 (400) 포함한 나머지 에러 처리
                     const errorCode = (data.error_code || data.error || "").toString().toUpperCase();
                     if (errorCode === "TOO_MANY_NODES") {
                         const uiMsg = mapBackendError(errorCode, data.error);
-
                         setStatus("error", uiMsg);
                         chartInner.innerHTML = `
                             <p class="placeholder" style="color:#b91c1c;">
@@ -1449,7 +1486,7 @@
                         return;
                     }
 
-                    // 그 외 진짜 서버 에러만 여기로
+                    // 그 외 일반 서버 에러
                     setStatus("error", `Server error (${res.status}). Please try again later.`);
                     chartInner.innerHTML = '<p class="placeholder">A server error occurred.</p>';
                     currentFunc.textContent = "";
@@ -1462,6 +1499,14 @@
                 const errorCode   = data.error_code || "";   // 없으면 빈 문자열
                 const funcName    = data.func_name || "";
                 const nodeLines   = data.node_lines || {};
+
+                // 서버에서 내려준 사용량 정보 (일반 계정인 경우)
+                if (!isTestUser && typeof data.usage_count === "number") {
+                    window.__serverUsageCount = data.usage_count;
+                }
+                if (!isTestUser && typeof data.daily_free_limit === "number") {
+                    window.__dailyFreeLimit = data.daily_free_limit;
+                }
 
                 if (errorMsg) {
                     const uiMsg = mapBackendError(errorCode, errorMsg);
@@ -1722,28 +1767,26 @@
     <header>
         <div>
             <h1>mAutoFlow</h1>
-            <div class="subtitle">When you enter C code on the left, a flowchart is automatically generated on the right.</div>
+            <div class="subtitle">
+                When you enter C code on the left, a flowchart is automatically generated on the right.
+            </div>
         </div>
-        <div class="topbar-right">
-	    <!--  로그인 영역 -->
-                   <span id="welcomeText" style="margin-right:8px;"></span>
 
-                   <div id="loggedOutButtons" style="display:inline-flex; gap:4px; margin-right:8px;">
-                       <button class="btn-settings" onclick="loginWithGoogle()">Login with Google</button>
-                   </div>
-
-                   <div id="loggedInButtons" style="display:none; gap:4px; margin-right:8px;">
-                       <button class="btn-settings" onclick="logout()">Logout</button>
-                   </div>
-                   <!--  로그인 영역 끝 --> 	
-            <button class="btn-settings" onclick="downloadDiagram()">DOWNLOAD</button>
-            <button class="btn-settings" onclick="openSettings()">SETTINGS</button>
-            <button id="helpToggleBtn" class="btn-settings" onclick="toggleHelp()">HELP</button>
-        </div>
+        <!-- 오른쪽 상단 메뉴: 로그인 + 버튼 + 백엔드 버전 -->
         <div class="topbar-right">
-            <!--  로그인 영역 -->
-            ...
-            <!--  로그인 영역 끝 --> 	
+            <!-- 로그인 영역 -->
+            <span id="welcomeText" style="margin-right:8px;"></span>
+
+            <div id="loggedOutButtons" style="display:inline-flex; gap:4px; margin-right:8px;">
+                <button class="btn-settings" onclick="loginWithGoogle()">Login with Google</button>
+            </div>
+
+            <div id="loggedInButtons" style="display:none; gap:4px; margin-right:8px;">
+                <button class="btn-settings" onclick="logout()">Logout</button>
+            </div>
+            <!-- 로그인 영역 끝 -->
+
+            <!-- 기능 버튼들 -->
             <button class="btn-settings" onclick="downloadDiagram()">DOWNLOAD</button>
             <button class="btn-settings" onclick="openSettings()">SETTINGS</button>
             <button id="helpToggleBtn" class="btn-settings" onclick="toggleHelp()">HELP</button>
