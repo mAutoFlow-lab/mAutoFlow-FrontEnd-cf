@@ -1265,109 +1265,6 @@
         }
 
 
-        // 노드 라벨 + (선택) 라인 힌트로, "가장 잘 맞는" 코드 라인 인덱스만 계산
-        function findBestLineIndexForLabel(rawLabel, approxLineHint) {
-            const textarea = document.getElementById("src");
-            if (!textarea) return -1;
-
-            const code = textarea.value;
-            if (!code) return -1;
-
-            const lines = code.split("\n");
-
-            let core = rawLabel || "";
-            if (core.indexOf("\n") !== -1) {
-                const parts = core.split(/\n/).map(p => p.trim()).filter(Boolean);
-                if (parts.length > 0) {
-                    core = parts.reduce((a, b) => (a.length <= b.length ? a : b));
-                }
-            }
-
-            let label = normalizeForMatch(core);
-            if (!label) return -1;
-
-            if (label.length > 120) {
-                label = label.slice(0, 120);
-            }
-
-            const eqCandidates = [];
-            const subCandidates = [];
-
-            for (let i = 0; i < lines.length; i++) {
-                const normLine = normalizeForMatch(lines[i]);
-                if (!normLine) continue;
-
-                if (normLine === label) {
-                    eqCandidates.push(i);
-                } else {
-                    if (
-                        normLine.indexOf(label) !== -1 ||
-                        (label.indexOf(normLine) !== -1 && normLine.length > 5)
-                    ) {
-                        subCandidates.push(i);
-                    }
-                }
-            }
-
-            let bestLine = -1;
-            let candidates = [];
-
-            if (eqCandidates.length > 0) {
-                candidates = eqCandidates;
-            } else if (subCandidates.length > 0) {
-                candidates = subCandidates;
-            }
-
-            if (candidates.length > 0) {
-                if (typeof approxLineHint === "number" && !Number.isNaN(approxLineHint)) {
-                    let minDist = Infinity;
-                    candidates.forEach(idx => {
-                        const d = Math.abs(idx - approxLineHint);
-                        if (d < minDist) {
-                            minDist = d;
-                            bestLine = idx;
-                        }
-                    });
-                } else {
-                    bestLine = candidates[0];
-                }
-            } else {
-                let bestScore = 0;
-                let bestIdx = -1;
-
-                for (let i = 0; i < lines.length; i++) {
-                    const normLine = normalizeForMatch(lines[i]);
-                    if (!normLine) continue;
-
-                    const lenLine = normLine.length;
-                    const lenLabel = label.length;
-                    let score = 0;
-
-                    if (normLine === label) {
-                        score = 1.0;
-                    } else if (normLine.indexOf(label) !== -1) {
-                        score = label.length / lenLine;
-                    } else if (label.indexOf(normLine) !== -1) {
-                        score = lenLine / lenLabel;
-                    } else {
-                        continue;
-                    }
-
-                    if (score > bestScore) {
-                        bestScore = score;
-                        bestIdx = i;
-                    }
-                }
-
-                if (bestScore > 0) {
-                    bestLine = bestIdx;
-                }
-            }
-
-            return bestLine;
-        }
-
-
         // 노드 라벨 + (선택) 대략 라인 위치 힌트로 코드 라인 하이라이트
         // -> 찾은 라인 인덱스를 반환 (없으면 -1)
         function highlightCodeForLabel(rawLabel, approxLineHint) {
@@ -1563,7 +1460,7 @@
                     clearHoverLine();
                 });
 
-                // 마우스를 노드 위에 올렸을 때
+                // 마우스 올렸을 때: 노드 hover + 좌측 코드 붉은 줄
                 node.addEventListener("mouseenter", () => {
                     node.classList.add("autoflow-hover");
 
@@ -1574,44 +1471,19 @@
                         nodeKey = m[1];
                     }
 
-                    // 노드 라벨 (case 2:, if(...), bLevel = ... 등)
-                    const rawText = node.textContent || "";
-                    let label = rawText.replace(/\s+/g, " ").trim();
-                    if (!label) {
-                        clearHoverLine();
-                        return;
-                    }
-
-                    const lower = label.toLowerCase();
-                    if (lower === "merge" || lower.startsWith("start") || lower.startsWith("end")) {
-                        // 의미 없는 노드(start/end/merge)는 코드에 매핑하지 않음
-                        clearHoverLine();
-                        return;
-                    }
-
                     const mapped = nodeLines[nodeKey];
-                    const approxHint =
-                        (typeof mapped === "number") ? mapped : null;
-
-                    // 👉 클릭과 같은 매칭 로직으로 "가장 맞는 코드 라인"만 찾기
-                    let bestLine = findBestLineIndexForLabel(label, approxHint);
-
-                    if (bestLine >= 0) {
-                        showHoverLine(bestLine);
-                    } else if (typeof mapped === "number") {
-                        // 그래도 못 찾으면 node_lines 값으로 fallback
+                    if (typeof mapped === "number") {
+                        // selection(파란색)은 건드리지 않고
+                        // 해당 라인에만 붉은 오버레이 표시
                         showHoverLine(mapped);
-                    } else {
-                        clearHoverLine();
                     }
                 });
 
-                // 마우스가 노드를 벗어났을 때
+                // 마우스가 나갔을 때: hover 스타일 + 붉은 줄 제거
                 node.addEventListener("mouseleave", () => {
                     node.classList.remove("autoflow-hover");
                     clearHoverLine();
                 });
-
             });
         }
 
