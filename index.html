@@ -1025,68 +1025,66 @@
             const textarea = document.getElementById("src");
             if (!textarea) return;
 
-            const rect = textarea.getBoundingClientRect();
+            const rect  = textarea.getBoundingClientRect();
             const style = window.getComputedStyle(textarea);
 
-            // line-height 얻기 (명시 안 되어 있으면 font-size * 1.4 정도로 추정)
+            // line-height
             let lineHeight = parseFloat(style.lineHeight);
             if (Number.isNaN(lineHeight)) {
                 const fontSize = parseFloat(style.fontSize) || 13;
                 lineHeight = fontSize * 1.4;
             }
 
-            // textarea 내부에서의 Y 위치 + 스크롤 고려
-            const offsetY = e.clientY - rect.top + textarea.scrollTop;
-            if (offsetY < 0) return;
+            const paddingTop = parseFloat(style.paddingTop) || 0;
+
+            // textarea 안에서의 Y + 스크롤 - 패딩
+            let offsetY = e.clientY - rect.top + textarea.scrollTop - paddingTop;
+            if (offsetY < 0) offsetY = 0;
 
             const lineIdx = Math.floor(offsetY / lineHeight);
-            if (lineIdx === lastHoverLineIdx) return;  // 같은 줄이면 다시 계산 안 함
+            if (lineIdx === lastHoverLineIdx) return;  // 같은 줄이면 다시 계산 X
             lastHoverLineIdx = lineIdx;
 
-            // 👉 현재 줄 기준으로 노드 하이라이트 (클릭/캐럿과 동일 동작)
             highlightNodesForLine(lineIdx);
         }
-                
+              
 
-        // 우측 노드 hover 시, 좌측 코드의 특정 라인에 붉은 오버레이 표시
+        // 우측 노드 hover 시, 좌측 코드에 붉은 줄 표시
         function showHoverLine(lineIdx) {
-            const textarea   = document.getElementById("src");
-            const codeArea   = document.getElementById("codeArea");
-            const highlight  = document.getElementById("hoverHighlight");
-
-            if (!textarea || !codeArea || !highlight) return;
+            const textarea  = document.getElementById("src");
+            const highlight = document.getElementById("hoverHighlight");
+            if (!textarea || !highlight) return;
 
             const code  = textarea.value || "";
             const lines = code.split("\n");
             if (!lines.length) return;
 
-            // 라인 인덱스 보정
             if (lineIdx < 0) lineIdx = 0;
             if (lineIdx >= lines.length) lineIdx = lines.length - 1;
 
-            // line-height 계산
             const style = window.getComputedStyle(textarea);
             let lineHeight = parseFloat(style.lineHeight);
             if (Number.isNaN(lineHeight)) {
                 const fontSize = parseFloat(style.fontSize) || 13;
                 lineHeight = fontSize * 1.4;
             }
+            const paddingTop = parseFloat(style.paddingTop) || 0;
 
             const lineTopInTextarea = lineIdx * lineHeight;
 
-            // textarea가 codeArea 안에서 떨어진 위치 + 스크롤 반영
             const top =
                 textarea.offsetTop +
+                paddingTop +
                 (lineTopInTextarea - textarea.scrollTop);
 
             const left   = textarea.offsetLeft;
             const width  = textarea.clientWidth;
             const height = lineHeight;
 
-            // 화면 밖이면 안 보이게
+            // 화면 밖이면 숨김
             if (
-                top + height < textarea.offsetTop ||
-                top > textarea.offsetTop + textarea.clientHeight
+                top + height < textarea.offsetTop + paddingTop ||
+                top > textarea.offsetTop + paddingTop + textarea.clientHeight
             ) {
                 highlight.style.display = "none";
                 return;
@@ -1097,6 +1095,12 @@
             highlight.style.width  = `${width}px`;
             highlight.style.height = `${height}px`;
             highlight.style.display = "block";
+        }
+
+        function clearHoverLine() {
+            const highlight = document.getElementById("hoverHighlight");
+            if (!highlight) return;
+            highlight.style.display = "none";
         }
 
         // 붉은 하이라이트 제거
@@ -1368,6 +1372,106 @@
         }
 
 
+        function findBestLineIndexForLabel(rawLabel, approxLineHint) {
+            const textarea = document.getElementById("src");
+            if (!textarea) return -1;
+
+            const code = textarea.value || "";
+            if (!code) return -1;
+
+            const lines = code.split("\n");
+
+            let core = rawLabel || "";
+            if (core.indexOf("\n") !== -1) {
+                const parts = core.split(/\n/).map(p => p.trim()).filter(Boolean);
+                if (parts.length > 0) {
+                    core = parts.reduce((a, b) => (a.length <= b.length ? a : b));
+                }
+            }
+
+            let label = normalizeForMatch(core);
+            if (!label) return -1;
+            if (label.length > 120) {
+                label = label.slice(0, 120);
+            }
+
+            const eqCandidates = [];
+            const subCandidates = [];
+
+            for (let i = 0; i < lines.length; i++) {
+                const normLine = normalizeForMatch(lines[i]);
+                if (!normLine) continue;
+
+                if (normLine === label) {
+                    eqCandidates.push(i);
+                } else if (
+                    normLine.indexOf(label) !== -1 ||
+                    (label.indexOf(normLine) !== -1 && normLine.length > 5)
+                ) {
+                    subCandidates.push(i);
+                }
+            }
+
+            let bestLine = -1;
+            let candidates = [];
+
+            if (eqCandidates.length > 0) {
+                candidates = eqCandidates;
+            } else if (subCandidates.length > 0) {
+                candidates = subCandidates;
+            }
+
+            if (candidates.length > 0) {
+                if (typeof approxLineHint === "number" && !Number.isNaN(approxLineHint)) {
+                    let minDist = Infinity;
+                    candidates.forEach(idx => {
+                        const d = Math.abs(idx - approxLineHint);
+                        if (d < minDist) {
+                            minDist = d;
+                            bestLine = idx;
+                        }
+                    });
+                } else {
+                    bestLine = candidates[0];
+                }
+            } else {
+                // fallback: 가장 비슷한 줄 하나 찾기
+                let bestScore = 0;
+                let bestIdx = -1;
+
+                for (let i = 0; i < lines.length; i++) {
+                    const normLine = normalizeForMatch(lines[i]);
+                    if (!normLine) continue;
+
+                    const lenLine = normLine.length;
+                    const lenLabel = label.length;
+                    let score = 0;
+
+                    if (normLine === label) {
+                        score = 1.0;
+                    } else if (normLine.indexOf(label) !== -1) {
+                        score = label.length / lenLine;
+                    } else if (label.indexOf(normLine) !== -1) {
+                        score = lenLine / lenLabel;
+                    } else {
+                        continue;
+                    }
+
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestIdx = i;
+                    }
+                }
+
+                if (bestScore > 0) {
+                    bestLine = bestIdx;
+                }
+            }
+
+            return bestLine;
+        }
+
+
         // 노드 라벨 + (선택) 대략 라인 위치 힌트로 코드 라인 하이라이트
         // -> 찾은 라인 인덱스를 반환 (없으면 -1)
         function highlightCodeForLabel(rawLabel, approxLineHint) {
@@ -1517,16 +1621,15 @@
             const nodes = svg.querySelectorAll(".node");
             nodes.forEach(node => {
                 node.style.cursor = "pointer";
-                
+
+                // 클릭: 기존 selection 로직 유지
                 node.addEventListener("click", () => {
                     if (!textarea) return;
 
-                    // 선택된 노드 하이라이트
                     clearNodeHighlight();
                     node.classList.add("autoflow-selected");
                     scrollNodeIntoCenter(node);
 
-                    // node id -> N1, N2 ...
                     const rawId = node.getAttribute("id") || "";
                     let nodeKey = rawId;
                     const m = rawId.match(/(?:flowchart-)?(N\d+)/);
@@ -1534,36 +1637,28 @@
                         nodeKey = m[1];
                     }
 
-                    // 노드 라벨 텍스트
                     const rawText = node.textContent || "";
                     let label = rawText.replace(/\s+/g, " ").trim();
                     if (!label) return;
 
                     const lower = label.toLowerCase();
-                    if (lower === "merge") return;
-                    if (lower.startsWith("start")) return;
-                    if (lower.startsWith("end")) return;
+                    if (lower === "merge" || lower.startsWith("start") || lower.startsWith("end")) {
+                        return;
+                    }
 
-                    // node_lines에서 온 라인 번호는 "힌트"로만 사용
                     const mapped = nodeLines[nodeKey];
                     const approxHint =
                         (typeof mapped === "number") ? mapped : null;
 
-                    // 1차: 항상 문자열 기반 매칭 사용
                     let bestLine = highlightCodeForLabel(label, approxHint);
-
-                    // 2차: 텍스트 매칭이 완전히 실패한 경우에만
-                    //      node_lines 라인 번호 그대로 사용 (fallback)
                     if (bestLine < 0 && typeof mapped === "number") {
                         bestLine = highlightCodeAtLine(mapped);
                     }
 
-                    // 클릭하면 hover용 붉은 라인은 지워서
-                    // 파란 selection만 보이게
-                    clearHoverLine();
+                    clearHoverLine(); // 클릭 후에는 hover 붉은 줄 제거
                 });
 
-                // 마우스를 노드 위에 올렸을 때
+                // hover: 노드 + 좌측 코드 붉은 줄
                 node.addEventListener("mouseenter", () => {
                     node.classList.add("autoflow-hover");
 
@@ -1574,7 +1669,6 @@
                         nodeKey = m[1];
                     }
 
-                    // 노드 라벨 (case 2:, if(...), bLevel = ... 등)
                     const rawText = node.textContent || "";
                     let label = rawText.replace(/\s+/g, " ").trim();
                     if (!label) {
@@ -1584,7 +1678,6 @@
 
                     const lower = label.toLowerCase();
                     if (lower === "merge" || lower.startsWith("start") || lower.startsWith("end")) {
-                        // 의미 없는 노드(start/end/merge)는 코드에 매핑하지 않음
                         clearHoverLine();
                         return;
                     }
@@ -1593,25 +1686,24 @@
                     const approxHint =
                         (typeof mapped === "number") ? mapped : null;
 
-                    // 👉 클릭과 같은 매칭 로직으로 "가장 맞는 코드 라인"만 찾기
+                    // 클릭과 동일한 매칭 로직으로 코드 라인 번호만 계산
                     let bestLine = findBestLineIndexForLabel(label, approxHint);
+
+                    if (bestLine < 0 && typeof mapped === "number") {
+                        bestLine = mapped;   // 마지막 fallback
+                    }
 
                     if (bestLine >= 0) {
                         showHoverLine(bestLine);
-                    } else if (typeof mapped === "number") {
-                        // 그래도 못 찾으면 node_lines 값으로 fallback
-                        showHoverLine(mapped);
                     } else {
                         clearHoverLine();
                     }
                 });
 
-                // 마우스가 노드를 벗어났을 때
                 node.addEventListener("mouseleave", () => {
                     node.classList.remove("autoflow-hover");
                     clearHoverLine();
                 });
-
             });
         }
 
