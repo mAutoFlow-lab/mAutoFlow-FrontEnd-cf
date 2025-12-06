@@ -305,21 +305,6 @@
             fill: #000000;
         }
 
-        /* 마우스만 올려놓았을 때(hover) 노드 하이라이트 – 붉은 계열, 클릭과 구분 */
-        .node.autoflow-hover rect,
-        .node.autoflow-hover polygon,
-        .node.autoflow-hover path {
-            stroke: #ef4444; /* 연한 붉은 계열 */
-            stroke-width: 3px;
-            stroke-dasharray: 4 2; /* 점선 느낌으로 선택과 구분 */
-            filter: drop-shadow(0 0 4px rgba(248, 113, 113, 0.7));
-        }
-
-        .node.autoflow-hover text {
-            font-weight: 600;
-        }
-
-
         ..topbar-right {
             display: flex;
             align-items: center;
@@ -743,10 +728,6 @@
                     ["click", "keyup", "mouseup"].forEach(ev => {
                         src.addEventListener(ev, updateNodeHighlightFromCaret);
                     });
-
-                    // HELP → CODE 복귀 후에도 hover 하이라이트 동작
-                    src.addEventListener("mousemove", handleCodeHover);
-                    
                     src.addEventListener("input", function() {
                         if (typingTimer) clearTimeout(typingTimer);
                         typingTimer = setTimeout(function() {
@@ -1005,35 +986,6 @@
         // ============================
         //  코드 라인 → 노드 하이라이트
         // ============================
-
-        let lastHoverLineIdx = -1;  // 코드 영역 hover 시, 마지막으로 처리한 라인 인덱스
-
-        function handleCodeHover(e) {
-            const textarea = document.getElementById("src");
-            if (!textarea) return;
-
-            const rect = textarea.getBoundingClientRect();
-            const style = window.getComputedStyle(textarea);
-
-            // line-height 얻기 (명시 안 되어 있으면 font-size * 1.4 정도로 추정)
-            let lineHeight = parseFloat(style.lineHeight);
-            if (Number.isNaN(lineHeight)) {
-                const fontSize = parseFloat(style.fontSize) || 13;
-                lineHeight = fontSize * 1.4;
-            }
-
-            // textarea 내부에서의 Y 위치 + 스크롤 고려
-            const offsetY = e.clientY - rect.top + textarea.scrollTop;
-            if (offsetY < 0) return;
-
-            const lineIdx = Math.floor(offsetY / lineHeight);
-            if (lineIdx === lastHoverLineIdx) return;  // 같은 줄이면 다시 계산 안 함
-            lastHoverLineIdx = lineIdx;
-
-            // 👉 현재 줄 기준으로 노드 하이라이트 (클릭/캐럿과 동일 동작)
-            highlightNodesForLine(lineIdx);
-        }
-                
 
         // 선택된 노드 하이라이트 해제
         function clearNodeHighlight() {
@@ -1342,7 +1294,6 @@
             const nodes = svg.querySelectorAll(".node");
             nodes.forEach(node => {
                 node.style.cursor = "pointer";
-                
                 node.addEventListener("click", () => {
                     if (!textarea) return;
 
@@ -1385,17 +1336,6 @@
 
                     // bestLine 은 highlightCodeForLabel / highlightCodeAtLine 안에서
                     // 이미 selection + scroll 을 처리하므로 여기서 따로 할 일은 없음
-                });
-
-                // 마우스 올렸을 때: hover 하이라이트
-                node.addEventListener("mouseenter", () => {
-                    // 이미 클릭으로 선택된 노드는 그대로 두고, 추가로 hover 효과만
-                    node.classList.add("autoflow-hover");
-                });
-
-                // 마우스가 나갔을 때: hover 제거
-                node.addEventListener("mouseleave", () => {
-                    node.classList.remove("autoflow-hover");
                 });
             });
         }
@@ -1752,10 +1692,7 @@
             // 코드 → 노드 하이라이트 연동
             ["click", "keyup", "mouseup"].forEach(ev => {
                 src.addEventListener(ev, updateNodeHighlightFromCaret);
-            });
-
-            // 코드 영역 위에 마우스만 올려도 → 해당 라인의 노드 하이라이트
-            src.addEventListener("mousemove", handleCodeHover);
+            });            
 
             // 우측 플로우차트 영역에서 Ctrl+휠로 그림만 줌
             const chartContainer = document.getElementById("chartContainer");
