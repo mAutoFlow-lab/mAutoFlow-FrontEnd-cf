@@ -1173,14 +1173,18 @@
             const lines = code.split("\n");
             if (!lines.length) return;
 
+            // 라인 인덱스 보정
             let idx = lineIdx;
             if (idx < 0) idx = 0;
             if (idx >= lines.length) idx = lines.length - 1;
 
             const normLine = normalizeForMatch(lines[idx]);
             if (!normLine) {
+                clearNodeHighlight();
                 return;
             }
+
+            clearNodeHighlight();
 
             const nodes = svg.querySelectorAll(".node");
             let bestNode = null;
@@ -1200,11 +1204,8 @@
 
             if (!bestNode) return;
 
-            // (삭제) clearNodeHighlight();
-            // (삭제) bestNode.classList.add("autoflow-selected");
-            // (삭제) scrollNodeIntoCenter(bestNode);
-
-            // 우측 노드 선택 표시 안 함 (hover 상태일 때만 표시됨)
+            bestNode.classList.add("autoflow-selected");
+            scrollNodeIntoCenter(bestNode);
         }
 
 
