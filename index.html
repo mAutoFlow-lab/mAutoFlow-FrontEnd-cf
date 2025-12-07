@@ -334,12 +334,12 @@
             background: rgba(255,255,255,0.12);
         }
 
-        /* HELP 모드에서 CODE 버튼 강조용 */
+        /* HELP 모드에서 CODE 버튼 매우 부드러운 강조용 */
         .btn-code-blink {
-            background: #f97316;
+            background: #f59e0b;             /* 기존보다 더 연한 주황색 */
             color: #ffffff;
-            border-color: #fb923c;
-            animation: codeSoftBlink 1.4s ease-in-out infinite;
+            border-color: #fcd34d;           /* 연한 테두리 */
+            animation: codeSoftBlink 2.4s ease-in-out infinite; /* 더 느리고 부드럽게 */
         }
 
         @keyframes codeSoftBlink {
@@ -347,10 +347,10 @@
                 opacity: 1;
             }
             50% {
-                opacity: 0.35;
+                opacity: 0.6;                /* 기존 0.35 → 훨씬 덜 흐려짐 */
             }
         }
-        
+                
 
         /* SETTINGS 모달 */
         .modal-overlay {
