@@ -810,6 +810,17 @@ const HELP_TEXT_HTML = `
             const overlay = document.getElementById("settingsOverlay");
             if (!overlay) return;
             overlay.classList.remove("modal-hidden");
+
+            // 패널을 화면 중앙에 위치시키기
+            const panel = overlay.querySelector(".modal-panel");
+            if (panel) {
+                panel.style.position = "fixed";  // 뷰포트 기준
+                const rect = panel.getBoundingClientRect();
+                const left = (window.innerWidth - rect.width) / 2;
+                const top  = (window.innerHeight - rect.height) / 2;
+                panel.style.left = `${Math.max(left, 0)}px`;
+                panel.style.top  = `${Math.max(top, 0)}px`;
+            }
         }
 
         function closeSettings() {
@@ -1760,6 +1771,76 @@ const HELP_TEXT_HTML = `
                         generateFlowchart(true);
                     }
                 });
+            });
+
+
+            // ============================
+            // SETTINGS 모달 드래그
+            // ============================
+            const settingsOverlay = document.getElementById("settingsOverlay");
+            const settingsPanel = settingsOverlay
+                ? settingsOverlay.querySelector(".modal-panel")
+                : null;
+            const settingsHeader = settingsPanel
+                ? settingsPanel.querySelector(".modal-header")
+                : null;
+
+            let isDraggingSettings = false;
+            let dragStartX = 0;
+            let dragStartY = 0;
+            let panelStartLeft = 0;
+            let panelStartTop = 0;
+
+            if (settingsHeader && settingsPanel) {
+                // 헤더에 마우스 아이콘 변경
+                settingsHeader.style.cursor = "move";
+
+                // 드래그 시작
+                settingsHeader.addEventListener("mousedown", function (e) {
+                    if (e.button !== 0) return; // 왼쪽 버튼만
+                    isDraggingSettings = true;
+
+                    const rect = settingsPanel.getBoundingClientRect();
+                    dragStartX = e.clientX;
+                    dragStartY = e.clientY;
+                    panelStartLeft = rect.left;
+                    panelStartTop = rect.top;
+
+                    // 뷰포트 기준 고정 위치
+                    settingsPanel.style.position = "fixed";
+                    settingsPanel.style.left = `${panelStartLeft}px`;
+                    settingsPanel.style.top = `${panelStartTop}px`;
+
+                    e.preventDefault(); // 텍스트 선택 방지
+                });
+            }
+
+            // 드래그 중
+            document.addEventListener("mousemove", function (e) {
+                if (!isDraggingSettings || !settingsPanel) return;
+
+                const dx = e.clientX - dragStartX;
+                const dy = e.clientY - dragStartY;
+
+                let newLeft = panelStartLeft + dx;
+                let newTop  = panelStartTop + dy;
+
+                // 화면 밖으로 안 나가도록 제한
+                const maxLeft = window.innerWidth - settingsPanel.offsetWidth;
+                const maxTop  = window.innerHeight - settingsPanel.offsetHeight;
+
+                if (newLeft < 0) newLeft = 0;
+                if (newTop < 0) newTop = 0;
+                if (newLeft > maxLeft) newLeft = maxLeft;
+                if (newTop > maxTop) newTop = maxTop;
+
+                settingsPanel.style.left = `${newLeft}px`;
+                settingsPanel.style.top  = `${newTop}px`;
+            });
+
+            // 드래그 종료
+            document.addEventListener("mouseup", function () {
+                isDraggingSettings = false;
             });
 
 
