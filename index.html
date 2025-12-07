@@ -1785,6 +1785,15 @@ const HELP_TEXT_HTML = `
                 ? settingsPanel.querySelector(".modal-header")
                 : null;
 
+            // 배경 클릭하면 닫기
+            if (settingsOverlay) {
+                settingsOverlay.addEventListener("click", function (e) {
+                    if (e.target === settingsOverlay) {
+                        closeSettings();
+                    }
+                });
+            }
+
             let isDraggingSettings = false;
             let dragStartX = 0;
             let dragStartY = 0;
