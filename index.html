@@ -1538,6 +1538,7 @@ const HELP_TEXT_HTML = `
                 const errorMsg    = data.error || "";
                 const errorCode   = data.error_code || "";   // 없으면 빈 문자열
                 const funcName    = data.func_name || "";
+                const fullSignature = data.full_signature || "";   // 추가
                 const nodeLines   = data.node_lines || {};
 
                 // 서버에서 내려준 사용량 정보 (일반 계정인 경우)
@@ -1607,8 +1608,8 @@ const HELP_TEXT_HTML = `
 
                 // Function name 출력 방식 반영 (Short / Full)
                 let displayName = funcName;
-                if (funcNameStyle === "full" && data.full_signature) {
-                    displayName = data.full_signature;
+                if (funcNameStyle === "full" && fullSignature) {
+                    displayName = fullSignature;
                 }
 
                 currentFunc.textContent = displayName ? `Function: ${displayName}` : "";
