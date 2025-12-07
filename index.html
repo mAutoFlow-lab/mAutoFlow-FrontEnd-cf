@@ -334,6 +334,31 @@
             background: rgba(255,255,255,0.12);
         }
 
+        /* HELP 모드에서 CODE 버튼 강조용 */
+        .btn-code-blink {
+            position: relative;
+            background: #f97316;        /* 주황색 배경 */
+            color: #ffffff;            /* 흰 글자 */
+            border-color: #fb923c;     /* 살짝 더 밝은 테두리 */
+            animation: codeBlink 0.9s ease-in-out infinite;
+        }
+
+        @keyframes codeBlink {
+            0% {
+                box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.9);
+                transform: translateY(0);
+            }
+            50% {
+                box-shadow: 0 0 0 6px rgba(249, 115, 22, 0.0);
+                transform: translateY(-1px);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.9);
+                transform: translateY(0);
+            }
+        }
+        
+
         /* SETTINGS 모달 */
         .modal-overlay {
             position: fixed;
@@ -709,6 +734,8 @@ const HELP_TEXT_HTML = `
 
                 isHelpMode = true;
                 btn.textContent = "CODE";
+                btn.classList.add("btn-code-blink");   // 🔹 CODE 버튼 깜빡이기 ON
+
 
                 codeHeader.innerHTML = "<span>HELP</span>";
                 codeArea.innerHTML = `
@@ -720,6 +747,8 @@ const HELP_TEXT_HTML = `
                 // === CODE 모드 복귀 ===
                 isHelpMode = false;
                 btn.textContent = "HELP";
+                btn.classList.remove("btn-code-blink");  // 🔹 깜빡임 OFF
+
 
                 // 이전에 계산된 노드 개수가 있으면 그대로 복원
                 let rightText = "Automatic analysis";
