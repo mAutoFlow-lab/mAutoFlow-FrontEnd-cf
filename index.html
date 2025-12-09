@@ -877,6 +877,28 @@ const HELP_TEXT_HTML = `
             overlay.classList.add("modal-hidden");
         }
 
+        function openDashboard() {
+          const overlay = document.getElementById("dashboardOverlay");
+          if (!overlay) return;
+          overlay.classList.remove("modal-hidden");
+
+          const panel = overlay.querySelector(".modal-panel");
+          if (panel) {
+            panel.style.position = "fixed";
+            const rect = panel.getBoundingClientRect();
+            const left = (window.innerWidth - rect.width) / 2;
+            const top  = (window.innerHeight - rect.height) / 2;
+            panel.style.left = `${Math.max(left, 0)}px`;
+            panel.style.top  = `${Math.max(top, 0)}px`;
+          }
+        }
+
+        function closeDashboard() {
+          const overlay = document.getElementById("dashboardOverlay");
+          if (!overlay) return;
+          overlay.classList.add("modal-hidden");
+        }
+
         // ============================
         //  Download 헬퍼들
         // ============================
@@ -1961,6 +1983,16 @@ const HELP_TEXT_HTML = `
                 });
             }
 
+            const dashboardOverlay = document.getElementById("dashboardOverlay");
+            if (dashboardOverlay) {
+                dashboardOverlay.addEventListener("click", (evt) => {
+                    if (evt.target === dashboardOverlay) {
+                        closeDashboard();
+                    }
+                });
+            }
+            
+
             let isDraggingSettings = false;
             let dragStartX = 0;
             let dragStartY = 0;
@@ -2123,6 +2155,12 @@ const HELP_TEXT_HTML = `
                 UPGRADE
             </button>
             <button class="btn-settings" onclick="downloadDiagram()">DOWNLOAD</button>
+
+            <!-- DASHBOARD 버튼 추가 -->
+            <button id="dashboardBtn" class="btn-settings" onclick="openDashboard()">
+                DASHBOARD
+            </button>
+            
             <button class="btn-settings" onclick="openSettings()">SETTINGS</button>
             <button id="helpToggleBtn" class="btn-settings" onclick="toggleHelp()">HELP</button>
 
@@ -2187,6 +2225,40 @@ void main(void)
             </div>
         </div>
     </div>
+
+    <!-- DASHBOARD 모달 -->
+    <div id="dashboardOverlay" class="modal-overlay modal-hidden">
+      <div class="modal-panel">
+        <div class="modal-header">
+          <h2>User Dashboard</h2>
+          <button class="modal-close" onclick="closeDashboard()">✕</button>
+        </div>
+
+        <div class="modal-section">
+          <div class="modal-section-title">Plan</div>
+          <div id="dashboardPlanText">
+            <!-- 예: Free / Pro / Expert 텍스트가 여기 들어감 -->
+          </div>
+        </div>
+
+        <div class="modal-section">
+          <div class="modal-section-title">Usage</div>
+          <div id="dashboardUsageText">
+            <!-- 예: Today: 3 / 5, Node limit: 20 이런 식 -->
+          </div>
+        </div>
+
+        <div class="modal-section">
+          <div class="modal-section-title">Subscription</div>
+          <div>
+            <button class="btn-settings" onclick="openProCheckout()">
+              Manage / Upgrade Plan
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
     <!-- SETTINGS 모달: 여기 추가 -->
     <div id="settingsOverlay" class="modal-overlay modal-hidden">
         <div class="modal-panel">
