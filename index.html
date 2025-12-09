@@ -1616,27 +1616,36 @@ const HELP_TEXT_HTML = `
                 const fullSignature = data.full_signature || "";
                 const nodeLines     = data.node_lines || {};
 
-                // ✅ 서버 응답 기반 계정 상태 반영
-                window.__isProUser      = !!data.is_pro_user;          // ← 반드시 !! (논리값)
+                // 백엔드에서 온 계정 상태 반영
+                window.__isProUser      = !!data.is_pro_user;          // Pro + Expert 모두 true
                 window.__planName       = data.plan_name || null;
                 window.__isTestAccount  = !!data.is_test_account;
+                window.__planTier       = data.plan_tier || null;      // "free" | "pro" | "expert"
+                window.__nodeLimitFromServer = data.node_limit ?? null;
 
-                // ✅ 플랜 티어 판별 (간단 버전)
-                // - plan_name 에 "expert" 라는 단어가 들어 있으면 Expert 로 간주
-                //   (레몬 상품 이름에 Expert 를 넣어두면 자동 인식됨)
-                const planNameLower = (window.__planName || "").toLowerCase();
-                if (planNameLower.includes("expert")) {
-                    window.__planTier = "expert";
+                // 플랜별 노드 제한 (클라이언트 기준)
+                // - 테스트 계정: 사실상 무제한
+                let effectiveNodeLimit = FREE_NODE_LIMIT;
+                if (window.__isTestAccount) {
+                    effectiveNodeLimit = Infinity;              // test account: no limit
+                } else if (window.__planTier === "expert") {
+                    effectiveNodeLimit = EXPERT_NODE_LIMIT;
                 } else if (window.__isProUser) {
-                    window.__planTier = "pro";
+                    effectiveNodeLimit = PRO_NODE_LIMIT;
                 } else {
-                    window.__planTier = "free";
+                    effectiveNodeLimit = FREE_NODE_LIMIT;
                 }
+
+                // 서버에서 node_limit 를 보내주면 그 값 우선 사용
+                if (typeof data.node_limit === "number") {
+                    effectiveNodeLimit = data.node_limit;
+                }
+                window.__nodeLimit = effectiveNodeLimit;
 
                 // UPGRADE 버튼 표시/숨김
                 const upgradeBtn = document.getElementById("upgradeButton");
                 if (upgradeBtn) {
-                    // Pro 유저 + 테스트 계정은 UPGRADE 버튼 숨김
+                    // 유료(Pro/Expert) 또는 테스트 계정이면 UPGRADE 숨김
                     upgradeBtn.style.display =
                         (window.__isProUser || window.__isTestAccount)
                             ? "none"
@@ -1671,56 +1680,59 @@ const HELP_TEXT_HTML = `
                 }
 
                 // 노드 제한 (테스트 계정은 무제한)
-                // - Free   : 최대 20 nodes
-                // - Pro    : 최대 200 nodes
-                // - Expert : 최대 1000 nodes
+                // - Free   : 최대 FREE_NODE_LIMIT
+                // - Pro    : 최대 PRO_NODE_LIMIT
+                // - Expert : 최대 EXPERT_NODE_LIMIT
                 if (!isTestUser) {
                     const tier = window.__planTier;
 
-                    if (tier === "expert") {
-                        // Expert 계정 노드 초과
-                        if (nodeCount > EXPERT_NODE_LIMIT) {
-                            const msg = `This function has ${nodeCount} nodes. The Expert plan supports up to ${EXPERT_NODE_LIMIT} nodes per diagram.`;
-                            setStatus("error", msg);
-
-                            chartInner.innerHTML = `
-                                <p class="placeholder" style="color:#b91c1c;">
-                                    Expert plan supports up to ${EXPERT_NODE_LIMIT} nodes per diagram.
-                                </p>`;
-                            currentFunc.textContent = "";
-                            return;
+                    // 서버가 node_limit 를 내려주면 그 값을 우선 사용
+                    let nodeLimit = window.__nodeLimit;
+                    if (!Number.isFinite(nodeLimit)) {
+                        if (window.__isTestAccount) {
+                            nodeLimit = Infinity;                // 테스트 계정 무제한
+                        } else if (tier === "expert") {
+                            nodeLimit = EXPERT_NODE_LIMIT;
+                        } else if (window.__isProUser) {
+                            nodeLimit = PRO_NODE_LIMIT;
+                        } else {
+                            nodeLimit = FREE_NODE_LIMIT;
                         }
-                    } else if (window.__isProUser) {
-                        // Pro 계정 노드 초과
-                        if (nodeCount > PRO_NODE_LIMIT) {
-                            const msg = `This function has ${nodeCount} nodes. The Pro plan supports up to ${PRO_NODE_LIMIT} nodes per diagram.`;
-                            setStatus("error", msg);
+                    }
 
-                            chartInner.innerHTML = `
-                                <p class="placeholder" style="color:#b91c1c;">
-                                    Pro plan supports up to ${PRO_NODE_LIMIT} nodes per diagram.
-                                </p>`;
-                            currentFunc.textContent = "";
-                            return;
+                    // nodeLimit 이 유한한 값일 때만 초과 체크
+                    if (Number.isFinite(nodeLimit) && nodeCount > nodeLimit) {
+                        let msgText = "";
+                        let bannerText = "";
+
+                        if (tier === "expert") {
+                            // Expert 유저
+                            msgText = `This function has ${nodeCount} nodes. The Expert plan supports up to ${nodeLimit} nodes per diagram.`;
+                            bannerText = `Expert plan supports up to ${nodeLimit} nodes per diagram.`;
+                        } else if (window.__isProUser) {
+                            // Pro 유저
+                            msgText = `This function has ${nodeCount} nodes. The Pro plan supports up to ${nodeLimit} nodes per diagram.`;
+                            bannerText = `Pro plan supports up to ${nodeLimit} nodes per diagram.`;
+                        } else {
+                            // Free 유저
+                            msgText = `This function has ${nodeCount} nodes. The free tier supports up to ${nodeLimit} nodes per diagram.`;
+                            bannerText = `Free tier supports up to ${nodeLimit} nodes per diagram.`;
                         }
-                    } else {
-                        // Free 계정 노드 초과
-                        if (nodeCount > FREE_NODE_LIMIT) {
-                            const msg = `This function has ${nodeCount} nodes. The free tier supports up to ${FREE_NODE_LIMIT} nodes per diagram.`;
-                            setStatus("error", msg);
 
-                            chartInner.innerHTML = `
-                                <p class="placeholder" style="color:#b91c1c;">
-                                    Free tier supports up to ${FREE_NODE_LIMIT} nodes per diagram.
-                                </p>`;
-                            currentFunc.textContent = "";
+                        setStatus("error", msgText);
+                        chartInner.innerHTML = `
+                            <p class="placeholder" style="color:#b91c1c;">
+                                ${bannerText}
+                            </p>`;
+                        currentFunc.textContent = "";
 
-                            // Upgrade 버튼 파스텔 연두색 블링크 추가 (Free 에서만)
-                            const ub = document.getElementById("upgradeButton");
-                            if (ub) ub.classList.add("upgrade-blink");
-
-                            return;
+                        // 🔸 UPGRADE 버튼 파스텔 연두색 블링크: "무료 계정"에서만 켜기
+                        const ub = document.getElementById("upgradeButton");
+                        if (ub && !window.__isProUser && tier !== "expert" && !window.__isTestAccount) {
+                            ub.classList.add("upgrade-blink");
                         }
+
+                        return;
                     }
                 }
                 
