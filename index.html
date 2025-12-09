@@ -877,9 +877,82 @@ const HELP_TEXT_HTML = `
             overlay.classList.add("modal-hidden");
         }
 
+        function updateDashboardUI() {
+            const planEl  = document.getElementById("dashboardPlanText");
+            const usageEl = document.getElementById("dashboardUsageText");
+
+            if (!planEl || !usageEl) return;
+
+            const user    = window.currentUser;
+            const email   = user?.email || "";
+            const isTest  = (email === TEST_EMAIL);
+            const tier    = window.__planTier || (window.__isProUser ? "pro" : "free");
+            const planName = window.__planName || (
+                tier === "expert" ? "Expert plan" :
+                tier === "pro"    ? "Pro plan" :
+                                    "Free tier"
+            );
+
+            // 노드 제한 값 (백엔드에서 내려준 값이 있으면 그거 우선)
+            let nodeLimit = window.__nodeLimit;
+            if (!Number.isFinite(nodeLimit)) {
+                if (isTest) {
+                    nodeLimit = Infinity;
+                } else if (tier === "expert") {
+                    nodeLimit = EXPERT_NODE_LIMIT;
+                } else if (window.__isProUser) {
+                    nodeLimit = PRO_NODE_LIMIT;
+                } else {
+                    nodeLimit = FREE_NODE_LIMIT;
+                }
+            }
+
+            // ---------- Plan 텍스트 ----------
+            if (!user) {
+                planEl.textContent =
+                    `Not logged in. Guest mode with Free tier (up to ${FREE_NODE_LIMIT} nodes per diagram).`;
+            } else if (isTest) {
+                planEl.textContent =
+                    `Test account for ${email}. Unlimited diagrams (no daily or node limit).`;
+            } else if (tier === "expert") {
+                planEl.textContent =
+                    `Expert plan (${planName}) for ${email}. Up to ${nodeLimit} nodes per diagram.`;
+            } else if (window.__isProUser) {
+                planEl.textContent =
+                    `Pro plan (${planName}) for ${email}. Up to ${nodeLimit} nodes per diagram.`;
+            } else {
+                planEl.textContent =
+                    `Free tier for ${email}. Up to ${nodeLimit} nodes per diagram.`;
+            }
+
+            // ---------- Usage 텍스트 ----------
+            if (!user) {
+                usageEl.textContent =
+                    `Guest usage shares the same free quota: ${DAILY_FREE_LIMIT} diagrams/day, ≤ ${FREE_NODE_LIMIT} nodes.`;
+            } else if (isTest) {
+                usageEl.textContent = "Unlimited usage. Daily limit does not apply to this test account.";
+            } else {
+                const count = window.__serverUsageCount;
+                const limit = window.__dailyFreeLimit;
+
+                if (typeof count === "number" && typeof limit === "number") {
+                    usageEl.textContent =
+                        `Today: ${count} / ${limit} diagrams (server-enforced free quota).`;
+                } else {
+                    usageEl.textContent =
+                        `Daily limit: ${DAILY_FREE_LIMIT} diagrams/day (server-enforced).` +
+                        " Usage details will appear after you generate at least one diagram.";
+                }
+            }
+        }
+
         function openDashboard() {
           const overlay = document.getElementById("dashboardOverlay");
           if (!overlay) return;
+
+          // 매번 열릴 때마다 최신 정보로 채우기
+          updateDashboardUI();
+          
           overlay.classList.remove("modal-hidden");
 
           const panel = overlay.querySelector(".modal-panel");
@@ -2236,15 +2309,15 @@ void main(void)
 
         <div class="modal-section">
           <div class="modal-section-title">Plan</div>
-          <div id="dashboardPlanText">
-            <!-- 예: Free / Pro / Expert 텍스트가 여기 들어감 -->
+          <div id="dashboardPlanText" class="modal-section-body">
+            Loading plan info...
           </div>
         </div>
 
         <div class="modal-section">
           <div class="modal-section-title">Usage</div>
-          <div id="dashboardUsageText">
-            <!-- 예: Today: 3 / 5, Node limit: 20 이런 식 -->
+          <div id="dashboardUsageText" class="modal-section-body">
+            Loading usage info...
           </div>
         </div>
 
