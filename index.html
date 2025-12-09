@@ -438,8 +438,9 @@
         const TEST_EMAIL = "exitgiveme@gmail.com";
 
         // ===== 하루 무료 사용량 설정 =====
-        const DAILY_FREE_LIMIT = 5;     // 하루 무료 5회
-        const FREE_NODE_LIMIT  = 20;    // 노드 10개까지 허용
+        const DAILY_FREE_LIMIT = 5;       // 하루 무료 5회
+        const FREE_NODE_LIMIT  = 20;      // Free: 노드 20개까지
+        const PRO_NODE_LIMIT   = 200;     // Pro: 노드 200개까지
         const USAGE_KEY        = "autoflow_daily_usage";
 
         function getTodayKey() {
@@ -713,12 +714,12 @@ const HELP_TEXT_HTML = `
             // Pro 유저: 서버에서 is_pro_user=true 내려준 경우
             if (window.__isProUser) {
                 const label = window.__planName
-                    ? `Pro (${window.__planName}): unlimited diagrams.`
-                    : "Pro: unlimited diagrams.";
+                    ? `Pro (${window.__planName}): unlimited diagrams (≤ ${PRO_NODE_LIMIT} nodes).`
+                    : `Pro: unlimited diagrams (≤ ${PRO_NODE_LIMIT} nodes).`;
                 span.textContent = label;
-                span.title = "Your subscription is active (Pro plan).";
+                span.title = `Your subscription is active (Pro plan, up to ${PRO_NODE_LIMIT} nodes per diagram).`;
                 return;
-            }        
+            }
 
             // 서버에서 아직 아무 정보도 안 받은 상태
             if (window.__serverUsageCount == null || window.__dailyFreeLimit == null) {
@@ -1626,18 +1627,38 @@ const HELP_TEXT_HTML = `
                 }
 
                 // 노드 제한 (테스트 계정은 무제한)
-                if (!isTestUser && nodeCount > FREE_NODE_LIMIT) {
-                    const msg = `This function has ${nodeCount} nodes. The free tier supports up to ${FREE_NODE_LIMIT} nodes per diagram.`;
-                    setStatus("error", msg);
+                // - Free:  최대 20 nodes
+                // - Pro :  최대 200 nodes
+                if (!isTestUser) {
+                    if (window.__isProUser) {
+                        // Pro 계정 노드 초과
+                        if (nodeCount > PRO_NODE_LIMIT) {
+                            const msg = `This function has ${nodeCount} nodes. The Pro plan supports up to ${PRO_NODE_LIMIT} nodes per diagram.`;
+                            setStatus("error", msg);
 
-                    chartInner.innerHTML = `
-                        <p class="placeholder" style="color:#b91c1c;">
-                            Free tier supports up to ${FREE_NODE_LIMIT} nodes per diagram.
-                        </p>`;
-                    currentFunc.textContent = "";
-                    return;
+                            chartInner.innerHTML = `
+                                <p class="placeholder" style="color:#b91c1c;">
+                                    Pro plan supports up to ${PRO_NODE_LIMIT} nodes per diagram.
+                                </p>`;
+                            currentFunc.textContent = "";
+                            return;
+                        }
+                    } else {
+                        // Free 계정 노드 초과
+                        if (nodeCount > FREE_NODE_LIMIT) {
+                            const msg = `This function has ${nodeCount} nodes. The free tier supports up to ${FREE_NODE_LIMIT} nodes per diagram.`;
+                            setStatus("error", msg);
+
+                            chartInner.innerHTML = `
+                                <p class="placeholder" style="color:#b91c1c;">
+                                    Free tier supports up to ${FREE_NODE_LIMIT} nodes per diagram.
+                                </p>`;
+                            currentFunc.textContent = "";
+                            return;
+                        }
+                    }
                 }
-
+                
                 // 정상 플로우차트 생성
                 chartInner.innerHTML = `<div class="mermaid">${mermaidCode}</div>`;
                 mermaid.init(undefined, chartInner.querySelector(".mermaid"));
@@ -1655,12 +1676,12 @@ const HELP_TEXT_HTML = `
                     if (window.__isProUser) {
                         setStatus(
                             "success",
-                            `${auto ? "Refresh complete." : "Flowchart creation complete."} Pro plan: unlimited diagrams.`
+                            `${auto ? "Refresh complete." : "Flowchart creation complete."} Pro plan: up to ${PRO_NODE_LIMIT} nodes per diagram.`
                         );
                     } else {
                         setStatus(
                             "success",
-                            "Refresh complete. Free tier: 5 diagrams/day, ≤ 20 nodes."
+                            `Refresh complete. Free tier: 5 diagrams/day, ≤ ${FREE_NODE_LIMIT} nodes.`
                         );
                     }
                 } else {
