@@ -747,7 +747,7 @@ const HELP_TEXT_HTML = `
 
             // 서버에서 아직 아무 정보도 안 받은 상태
             if (window.__serverUsageCount == null || window.__dailyFreeLimit == null) {
-                span.textContent = "Free tier: server-enforced (e.g. 5 diagrams/day, ≤ 20 nodes).";
+                span.textContent = `Free tier: 5 diagrams/day, ≤ ${FREE_NODE_LIMIT} nodes.`;
                 span.title = "Daily limit is enforced on the server.";
                 return;
             }
@@ -1766,10 +1766,21 @@ const HELP_TEXT_HTML = `
                             `${auto ? "Refresh complete." : "Flowchart creation complete."} Pro plan: up to ${PRO_NODE_LIMIT} nodes per diagram.`
                         );
                     } else {
-                        setStatus(
-                            "success",
-                            `Refresh complete. Free tier: 5 diagrams/day, ≤ ${FREE_NODE_LIMIT} nodes.`
-                        );
+                        // Free 유저: 가능하면 오늘 사용량 표시
+                        const count = window.__serverUsageCount;
+                        const limit = window.__dailyFreeLimit;
+
+                        if (typeof count === "number" && typeof limit === "number") {
+                            setStatus(
+                                "success",
+                                `Refresh complete. Free tier: Today ${count} / ${limit} (≤ ${FREE_NODE_LIMIT} nodes).`
+                            );
+                        } else {
+                            setStatus(
+                                "success",
+                                `Refresh complete. Free tier: 5 diagrams/day, ≤ ${FREE_NODE_LIMIT} nodes.`
+                            );
+                        }
                     }
                 } else {
                     setStatus(
