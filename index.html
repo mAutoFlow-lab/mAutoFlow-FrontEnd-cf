@@ -425,8 +425,12 @@
 
 	// 서버에서 내려준 사용량 / 한도 (없으면 null)
         window.__serverUsageCount = null;
-        window.__dailyFreeLimit = null;
-        window.__isProUser = false;
+        window.__dailyFreeLimit  = null;
+
+        // 구독/계정 상태
+        window.__isProUser      = false;
+        window.__planName       = null;
+        window.__isTestAccount  = false;
 
 	let lastCountedSource = "";   // 마지막으로 사용량을 올렸던 소스 코드
 
@@ -706,12 +710,15 @@ const HELP_TEXT_HTML = `
                 return;
             }
 
-            // Pro 유저: 서버에서 is_pro=true 내려준 경우
+            // Pro 유저: 서버에서 is_pro_user=true 내려준 경우
             if (window.__isProUser) {
-                span.textContent = "Pro: unlimited diagrams.";
+                const label = window.__planName
+                    ? `Pro (${window.__planName}): unlimited diagrams.`
+                    : "Pro: unlimited diagrams.";
+                span.textContent = label;
                 span.title = "Your subscription is active (Pro plan).";
                 return;
-            }            
+            }        
 
             // 서버에서 아직 아무 정보도 안 받은 상태
             if (window.__serverUsageCount == null || window.__dailyFreeLimit == null) {
@@ -1569,22 +1576,27 @@ const HELP_TEXT_HTML = `
                 }
                 
                 const data = await res.json();
-                const mermaidCode = data.mermaid || "";
-                const errorMsg    = data.error || "";
-                const errorCode   = data.error_code || "";   // 없으면 빈 문자열
-                const funcName    = data.func_name || "";
-                const fullSignature = data.full_signature || "";   // 추가
-                const nodeLines   = data.node_lines || {};
+                const mermaidCode   = data.mermaid || "";
+                const errorMsg      = data.error || "";
+                const errorCode     = data.error_code || "";
+                const funcName      = data.func_name || "";
+                const fullSignature = data.full_signature || "";
+                const nodeLines     = data.node_lines || {};
 
-                // is_pro 처리 직후에 추가
-                if (typeof data.is_pro === "boolean") {
-                    window.__isProUser = data.is_pro;
+                // 백엔드에서 온 계정 상태 반영
+                window.__isProUser     = !!data.is_pro_user;
+                window.__planName      = data.plan_name || null;
+                window.__isTestAccount = !!data.is_test_account;
 
-                    const upgradeBtn = document.getElementById("upgradeButton");
-                    if (upgradeBtn) {
-                        upgradeBtn.style.display = window.__isProUser ? "none" : "inline-flex";
-                    }
-                }                
+                // UPGRADE 버튼 표시/숨김
+                const upgradeBtn = document.getElementById("upgradeButton");
+                if (upgradeBtn) {
+                    // Pro 유저 + 테스트 계정은 UPGRADE 버튼 숨김
+                    upgradeBtn.style.display =
+                        (window.__isProUser || window.__isTestAccount)
+                            ? "none"
+                            : "inline-flex";
+                }
 
                 // 서버에서 내려준 사용량 정보 (일반 계정인 경우)
                 if (!isTestUser && typeof data.usage_count === "number") {
