@@ -985,11 +985,19 @@ const HELP_TEXT_HTML = `
 
             // ---------- Usage 텍스트 ----------
             if (!user) {
+                // 비로그인 게스트 = Free와 같은 무료 쿼터 공유
                 usageEl.textContent =
                     `Guest usage shares the same free quota: ${DAILY_FREE_LIMIT} diagrams/day, ≤ ${FREE_NODE_LIMIT} nodes.`;
             } else if (isTest) {
-                usageEl.textContent = "Unlimited usage. Daily limit does not apply to this test account.";
+                // 테스트 계정은 완전 무제한
+                usageEl.textContent =
+                    "Unlimited usage. Daily limit does not apply to this test account.";
+            } else if (tier === "expert" || tier === "pro") {
+                // Expert / Pro : 일일 제한 없음, 노드 수만 제한
+                usageEl.textContent =
+                    "Unlimited usage. No daily diagram limit applies to your plan.";
             } else {
+                // Free 계정만 일일 5 diagrams/day 제한
                 const count = window.__serverUsageCount;
                 const limit = window.__dailyFreeLimit;
 
