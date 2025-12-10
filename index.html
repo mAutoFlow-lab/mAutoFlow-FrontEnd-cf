@@ -1754,9 +1754,9 @@ const HELP_TEXT_HTML = `
                             </p>`;
                         currentFunc.textContent = "";
 
-                        // 무료 계정에서만 업그레이드 버튼 깜빡임
+                        // free 또는 pro (expert 미만) 계정에서 UPGRADE 버튼 깜빡임
                         const ub = document.getElementById("upgradeButton");
-                        if (ub && !window.__isProUser && !isTestAccount) {
+                        if (ub && !isTestAccount && tier !== "expert") {
                             ub.classList.add("upgrade-blink");
                         }
 
