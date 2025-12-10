@@ -757,6 +757,56 @@ const HELP_TEXT_HTML = `
             span.textContent = `Today: ${count} / ${limit} (≤ ${FREE_NODE_LIMIT} nodes)`;
             span.title = "This usage count is returned from the server.";
         }
+
+        async function refreshPlanFromSupabase() {
+            // 아직 로그인 전이면 아무 것도 안 함
+            if (!window.supabase || !window.currentUser) return;
+
+            const user  = window.currentUser;
+            const email = user.email || "";
+
+            // 테스트 계정은 위에서 따로 처리하니까, 여기서는 단순 반환
+            if (email === TEST_EMAIL) {
+                return;
+            }
+
+            try {
+                const { data, error } = await supabase
+                    .from("subscriptions")
+                    .select("plan_tier, plan_name, status")
+                    .eq("user_id", user.id)
+                    .eq("status", "active")
+                    .order("created_at", { ascending: false })
+                    .limit(1)
+                    .maybeSingle();
+
+                if (error) {
+                    console.warn("[UI] failed to load subscription from Supabase:", error);
+                    return;
+                }
+
+                const tier      = (data && data.plan_tier) || "free";
+                const planName  = data?.plan_name || null;
+
+                window.__planTier  = tier;                         // "free" | "pro" | "expert" | ...
+                window.__planName  = planName;
+                window.__isProUser = (tier === "pro" || tier === "expert");
+
+                // 프론트에서 참고용 노드 한도도 같이 넣어 둠
+                if (tier === "expert") {
+                    window.__nodeLimit = EXPERT_NODE_LIMIT;
+                } else if (tier === "pro") {
+                    window.__nodeLimit = PRO_NODE_LIMIT;
+                } else {
+                    window.__nodeLimit = FREE_NODE_LIMIT;
+                }
+
+                // 새 플랜 정보 반영해서 상단 문구 다시 그리기
+                updateQuotaInfo();
+            } catch (e) {
+                console.error("[UI] refreshPlanFromSupabase error:", e);
+            }
+        }
         
         let currentBranchShape = "rounded";   // 분기 모양: 기본은 둥근 사각형
         let savedSourceCode = "";             // HELP 진입 전 코드 저장용
@@ -2523,6 +2573,17 @@ void main(void)
 
             // 로그인/로그아웃 시 무료 사용량 표시 갱신
             updateQuotaInfo();
+
+            // 로그인 상태라면 Supabase에서 구독/플랜 정보도 한 번 더 불러와서 반영
+            if (user) {
+                refreshPlanFromSupabase();
+            } else {
+                // 로그아웃 시 플랜 관련 전역값 초기화
+                window.__planTier           = null;
+                window.__planName           = null;
+                window.__isProUser          = false;
+                window.__nodeLimitFromServer = null;
+            }
         }
 
         async function loginWithGoogle() {
