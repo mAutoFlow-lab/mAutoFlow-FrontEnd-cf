@@ -423,8 +423,20 @@
           "https://mautoflow-lab.lemonsqueezy.com/buy/0d07c522-4264-4c87-a865-85ef42852174";
 
         function openProCheckout() {
-          // 필요하면 나중에 currentUser 체크해서 로그인 안 된 경우 막을 수도 있음
-          window.location.href = PRO_CHECKOUT_URL;
+          // Supabase 로그인 유저 정보가 있어야 user_id를 넘길 수 있음
+          const user = window.currentUser;
+
+          if (!user) {
+            alert("먼저 Google 로그인 후 다시 시도해 주세요.");
+            return;
+          }
+
+          // Hosted Checkout URL + custom user_id 전달
+          // docs: https://[STORE].lemonsqueezy.com/checkout/buy/[VARIANT_ID]?checkout[custom][user_id]=123 
+          const baseUrl = PRO_CHECKOUT_URL;
+          const url = `${baseUrl}?checkout[custom][user_id]=${encodeURIComponent(user.id)}`;
+
+          window.location.href = url;
         }
 
 	mermaid.initialize({ startOnLoad: false });
