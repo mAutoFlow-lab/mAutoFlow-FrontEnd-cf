@@ -402,16 +402,26 @@
             font-size: 16px;
         }
         .modal-section {
-            margin-bottom: 12px;
+            margin-bottom: 16px;
+            padding: 12px 0;
+            border-top: 1px solid rgba(148, 163, 184, 0.35);  /* 위쪽 얇은 구분선 */
         }
+
+        .modal-section:first-of-type {
+            margin-top: 0;
+            padding-top: 0;
+            border-top: none;   /* 제일 위 섹션은 선 제거 */
+        }
+
         .modal-section-title {
             font-weight: 600;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
         }
+
         .modal-radio-row {
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 6px;
         }
       
     </style>
@@ -2302,7 +2312,12 @@ const HELP_TEXT_HTML = `
                         try {
                             localStorage.setItem("autoflow-branch-shape", currentBranchShape);
                         } catch (e2) {}
-                        generateFlowchart(true);
+
+                        // src 가 있을 때만 플로우차트 재생성
+                        const srcElem = document.getElementById("src");
+                        if (srcElem) {
+                            generateFlowchart(true);
+                        }
                     }
                 });
             });
@@ -2324,7 +2339,12 @@ const HELP_TEXT_HTML = `
                         try {
                             localStorage.setItem("autoflow-funcname-style", funcNameStyle);
                         } catch (e2){}
-                        generateFlowchart(true);
+
+                        // src 가 있을 때만 플로우차트 재생성
+                        const srcElem = document.getElementById("src");
+                        if (srcElem) {
+                            generateFlowchart(true);
+                        }
                     }
                 });
             });
@@ -2659,7 +2679,7 @@ void main(void)
     <div id="settingsOverlay" class="modal-overlay modal-hidden">
         <div class="modal-panel">
             <div class="modal-header">
-                <h2>SETTINGS</h2>
+                <h2>Display Options</h2>
                 <button class="modal-close" onclick="closeSettings()">×</button>
             </div>
 
