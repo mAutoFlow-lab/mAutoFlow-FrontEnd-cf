@@ -1030,7 +1030,14 @@ const HELP_TEXT_HTML = `
 
                 codeHeader.innerHTML = "<span>HELP</span>";
                 codeArea.innerHTML = `
-                    <div id="helpContent" style="padding:10px; color:var(--code-text); font-size:13px; overflow-y:auto;">
+                    <div id="helpContent"
+                         style="
+                            flex: 1;
+                            padding: 10px;
+                            color: var(--code-text);
+                            font-size: 13px;
+                            overflow-y: auto;
+                        ">
                         ${HELP_TEXT_HTML}
                     </div>
                 `;
