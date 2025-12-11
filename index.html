@@ -407,6 +407,12 @@
             border-top: 1px solid rgba(148, 163, 184, 0.35); /* 왼쪽 패널 폭만큼 꽉 찬 선 */
         }
 
+        .settings-contact-link {
+            color: #facc15;                /* 노란 계열 – 어두운 배경에서 확실히 보임 */
+            text-decoration: underline;
+            font-weight: 600;
+        }                
+
         .modal-section:first-of-type {
             margin-top: 4px;
             padding-top: 0;
@@ -1723,12 +1729,13 @@ const HELP_TEXT_HTML = `
             if (!svg) return;
 
             const nodeLines = window.__nodeLines || {};
-            const textarea = document.getElementById("src");
 
             const nodes = svg.querySelectorAll(".node");
             nodes.forEach(node => {
                 node.style.cursor = "pointer";
                 node.addEventListener("click", () => {
+                    // ✅ 클릭 시점에 항상 최신 textarea를 다시 가져온다
+                    const textarea = document.getElementById("src");
                     if (!textarea) return;
 
                     // 선택된 노드 하이라이트
@@ -1767,9 +1774,6 @@ const HELP_TEXT_HTML = `
                     if (bestLine < 0 && typeof mapped === "number") {
                         bestLine = highlightCodeAtLine(mapped);
                     }
-
-                    // bestLine 은 highlightCodeForLabel / highlightCodeAtLine 안에서
-                    // 이미 selection + scroll 을 처리하므로 여기서 따로 할 일은 없음
                 });
             });
         }
@@ -2735,9 +2739,10 @@ void main(void)
             </div>
             <div style="margin-top:8px; font-size:11px; opacity:0.8; text-align:right;">
                 Contact: 
-                <a href="mailto:mautoflow.lab@gmail.com">mautoflow.lab@gmail.com</a>
+                <a href="mailto:mautoflow.lab@gmail.com" class="settings-contact-link">
+                    mautoflow.lab@gmail.com
+                </a>
             </div>
-
             <div style="text-align:right; margin-top:10px; font-size:12px;">
                 <button class="btn btn-ghost" onclick="closeSettings()">Close</button>
             </div>
