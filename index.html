@@ -421,6 +421,8 @@
         const API_BASE = "https://mautoflow-backend.onrender.com";
         const PRO_CHECKOUT_URL =
           "https://mautoflow-lab.lemonsqueezy.com/buy/0d07c522-4264-4c87-a865-85ef42852174";
+        const EXPERT_CHECKOUT_URL =
+          "https://mautoflow-lab.lemonsqueezy.com/buy/EXPERT_SLUG_HERE";
 
         function openProCheckout() {
           // Supabase 로그인 유저 정보가 있어야 user_id를 넘길 수 있음
@@ -685,6 +687,7 @@ const HELP_TEXT_HTML = `
         `;
    
         let isHelpMode = false;
+        let isSettingsMode = false;   // SETTINGS가 좌측에 뜨는 상태           
 
         // 현재 로그인 유저 기준 localStorage 키
         function getUsageStorageKey() {
@@ -876,6 +879,81 @@ const HELP_TEXT_HTML = `
         let currentBranchShape = "rounded";   // 분기 모양: 기본은 둥근 사각형
         let savedSourceCode = "";             // HELP 진입 전 코드 저장용
 
+        function restoreCodeEditor() {
+            const codeArea   = document.getElementById("codeArea");
+            const codeHeader = document.getElementById("codeHeader");
+            const btn        = document.getElementById("helpToggleBtn");
+
+            if (!codeArea || !codeHeader || !btn) return;
+
+            isHelpMode = false;
+            isSettingsMode = false;
+
+            btn.textContent = "HELP";
+            btn.classList.remove("btn-code-blink");
+
+            let rightText = "Automatic analysis";
+            if (typeof window.__nodeCount === "number" && window.__nodeCount > 0) {
+                rightText = `Nodes: ${window.__nodeCount}`;
+            }
+
+            codeHeader.innerHTML = `
+                <span>mAutoFlow</span>
+                <span style="opacity:0.7;">${rightText}</span>
+            `;
+
+            // ✅ 초기 상태와 동일하게: lineNumbers + textarea 둘 다 복원
+            codeArea.innerHTML = `
+                <div id="lineNumbers"></div>
+                <textarea id="src" spellcheck="false" placeholder="Paste your C / pseudo-C code here."></textarea>
+            `;
+
+            const src = document.getElementById("src");
+            const lineNumbers = document.getElementById("lineNumbers");
+
+            if (src) {
+                src.value = savedSourceCode || "";
+
+                // 코드 ↔ 노드 연동 이벤트
+                ["click", "keyup", "mouseup"].forEach(ev => {
+                    src.addEventListener(ev, updateNodeHighlightFromCaret);
+                });
+
+                // 자동 플로우차트 갱신
+                src.addEventListener("input", function() {
+                    if (typingTimer) clearTimeout(typingTimer);
+                    typingTimer = setTimeout(function() {
+                        generateFlowchart(true);
+                    }, TYPING_DELAY_MS);
+
+                    // 라인 번호도 같이 갱신
+                    if (lineNumbers) updateLineNumbersLocal();
+                });
+            }
+
+            // 🔹 라인 번호 갱신용 작은 함수 (restore 전용)
+            function updateLineNumbersLocal() {
+                if (!src || !lineNumbers) return;
+                const lines = src.value.split("\n").length || 1;
+                let html = "";
+                for (let i = 1; i <= lines; i++) {
+                    html += i + "<br>";
+                }
+                lineNumbers.innerHTML = html;
+            }
+
+            // 스크롤 동기화
+            if (src && lineNumbers) {
+                src.addEventListener("scroll", () => {
+                    lineNumbers.scrollTop = src.scrollTop;
+                });
+
+                // 초기 한 번 출력
+                updateLineNumbersLocal();
+            }
+        }
+
+
         function toggleHelp() {
             const codeArea   = document.getElementById("codeArea");
             const codeHeader = document.getElementById("codeHeader");
@@ -883,8 +961,8 @@ const HELP_TEXT_HTML = `
 
             if (!codeArea || !codeHeader || !btn) return;
 
-            if (!isHelpMode) {
-                // === HELP 모드 진입 ===
+            // 🔹 현재 CODE 상태 → HELP 진입 (SETTINGS 모드도 아님)
+            if (!isHelpMode && !isSettingsMode) {
                 // 현재 코드 저장
                 const srcNow = document.getElementById("src");
                 if (srcNow) {
@@ -894,9 +972,10 @@ const HELP_TEXT_HTML = `
                 }
 
                 isHelpMode = true;
-                btn.textContent = "CODE";
-                btn.classList.add("btn-code-blink");   // 🔹 CODE 버튼 깜빡이기 ON
+                isSettingsMode = false;
 
+                btn.textContent = "CODE";
+                btn.classList.add("btn-code-blink");   // CODE 깜빡임 ON
 
                 codeHeader.innerHTML = "<span>HELP</span>";
                 codeArea.innerHTML = `
@@ -904,45 +983,10 @@ const HELP_TEXT_HTML = `
                         ${HELP_TEXT_HTML}
                     </div>
                 `;
-            } else {
-                // === CODE 모드 복귀 ===
-                isHelpMode = false;
-                btn.textContent = "HELP";
-                btn.classList.remove("btn-code-blink");  // 🔹 깜빡임 OFF
-
-
-                // 이전에 계산된 노드 개수가 있으면 그대로 복원
-                let rightText = "Automatic analysis";
-                if (typeof window.__nodeCount === "number" && window.__nodeCount > 0) {
-                    rightText = `Nodes: ${window.__nodeCount}`;
-                }
-
-                codeHeader.innerHTML = `
-                    <span>mAutoFlow</span>
-                    <span style="opacity:0.7;">${rightText}</span>
-                `;
-
-                // 에디터 다시 만들기
-                codeArea.innerHTML = `
-                    <textarea id="src" spellcheck="false" placeholder="Paste your C / pseudo-C code here."></textarea>
-                `;
-
-                // 저장해둔 코드 복원
-                const src = document.getElementById("src");
-                if (src) {
-                    src.value = savedSourceCode || "";
-
-                    // 기존 이벤트 다시 연결
-                    ["click", "keyup", "mouseup"].forEach(ev => {
-                        src.addEventListener(ev, updateNodeHighlightFromCaret);
-                    });
-                    src.addEventListener("input", function() {
-                        if (typingTimer) clearTimeout(typingTimer);
-                        typingTimer = setTimeout(function() {
-                            generateFlowchart(true);
-                        }, TYPING_DELAY_MS);
-                    });
-                }
+            }
+            // HELP 모드이거나 SETTINGS 모드일 때 → CODE로 복귀
+            else {
+                restoreCodeEditor();
             }
         }
 
@@ -969,27 +1013,72 @@ const HELP_TEXT_HTML = `
             }
         }
 
+        // SETTINGS를 HELP처럼 좌측 코드 영역에 띄우는 버전
         function openSettings() {
-            const overlay = document.getElementById("settingsOverlay");
-            if (!overlay) return;
-            overlay.classList.remove("modal-hidden");
+            const codeArea   = document.getElementById("codeArea");
+            const codeHeader = document.getElementById("codeHeader");
+            const btn        = document.getElementById("helpToggleBtn");
 
-            // 패널을 화면 중앙에 위치시키기
-            const panel = overlay.querySelector(".modal-panel");
-            if (panel) {
-                panel.style.position = "fixed";  // 뷰포트 기준
-                const rect = panel.getBoundingClientRect();
-                const left = (window.innerWidth - rect.width) / 2;
-                const top  = (window.innerHeight - rect.height) / 2;
-                panel.style.left = `${Math.max(left, 0)}px`;
-                panel.style.top  = `${Math.max(top, 0)}px`;
+            if (!codeArea || !codeHeader || !btn) return;
+
+            // 이미 SETTINGS 모드면 다시 눌러도 그냥 무시
+            if (isSettingsMode) return;
+
+            // 현재 코드 저장 (HELP와 동일 로직)
+            const srcNow = document.getElementById("src");
+            if (srcNow) {
+                savedSourceCode = srcNow.value;
+            } else if (!savedSourceCode) {
+                savedSourceCode = "";
             }
+
+            isHelpMode = false;
+            isSettingsMode = true;
+
+            // HELP 버튼을 CODE 모드로 전환 + 깜빡임
+            btn.textContent = "CODE";
+            btn.classList.add("btn-code-blink");
+
+            // 헤더 타이틀을 SETTINGS로 변경
+            codeHeader.innerHTML = "<span>SETTINGS</span>";
+
+            // 기존 SETTINGS 모달 안의 패널 내용을 템플릿으로 활용
+            const overlay = document.getElementById("settingsOverlay");
+            const panel   = overlay ? overlay.querySelector(".modal-panel") : null;
+            if (!panel) {
+                // 혹시 못 찾으면 에러 문구만 표시
+                codeArea.innerHTML = `
+                    <div style="padding:10px; color:var(--code-text); font-size:13px;">
+                        SETTINGS panel not found.
+                    </div>
+                `;
+                return;
+            }
+
+            const panelHTML = panel.innerHTML;
+
+            // 좌측 코드 영역에 SETTINGS UI 렌더링
+            codeArea.innerHTML = `
+                <div id="settingsContent" style="padding:10px; color:var(--code-text); font-size:13px; overflow-y:auto;">
+                    ${panelHTML}
+                </div>
+            `;
+
+            // 새로 생긴 SETTINGS DOM 기준으로 라디오 초기화/이벤트 연결
+            const settingsRoot = document.getElementById("settingsContent");
+            initSettingsRadios(settingsRoot);
         }
 
+        // SETTINGS 화면에서 닫기( × 버튼 / Close 버튼 ) → CODE 화면 복귀
         function closeSettings() {
-            const overlay = document.getElementById("settingsOverlay");
-            if (!overlay) return;
-            overlay.classList.add("modal-hidden");
+            if (!isSettingsMode) {
+                // 혹시 모를 예전 모달 방식 fallback (실제로는 안 씀)
+                const overlay = document.getElementById("settingsOverlay");
+                if (overlay) overlay.classList.add("modal-hidden");
+                return;
+            }
+
+            restoreCodeEditor();
         }
 
         function updateDashboardUI() {
@@ -2165,6 +2254,84 @@ const HELP_TEXT_HTML = `
             });
         }
 
+
+        function initSettingsRadios(root) {
+            const scope = root || document;
+
+            // ----- Theme -----
+            let savedTheme = "classic";
+            try {
+                const t = localStorage.getItem("autoflow-theme");
+                if (t) savedTheme = t;
+            } catch (e) {}
+            applyTheme(savedTheme);
+
+            const themeRadios = scope.querySelectorAll('input[name="theme"]');
+            themeRadios.forEach(r => {
+                if (r.value === savedTheme) {
+                    r.checked = true;
+                }
+                r.addEventListener("change", (e) => {
+                    if (e.target.checked) {
+                        applyTheme(e.target.value);
+                        try {
+                            localStorage.setItem("autoflow-theme", e.target.value);
+                        } catch (e2) {}
+                        // 필요하면 자동 재생성
+                        // generateFlowchart(true);
+                    }
+                });
+            });
+
+            // ----- Branch Shape -----
+            let savedBranchShape = "rounded";
+            try {
+                const bs = localStorage.getItem("autoflow-branch-shape");
+                if (bs) savedBranchShape = bs;
+            } catch (e) {}
+            currentBranchShape = savedBranchShape;
+
+            const branchRadios = scope.querySelectorAll('input[name="branchShape"]');
+            branchRadios.forEach(r => {
+                if (r.value === savedBranchShape) {
+                    r.checked = true;
+                }
+                r.addEventListener("change", (e) => {
+                    if (e.target.checked) {
+                        currentBranchShape = e.target.value;
+                        try {
+                            localStorage.setItem("autoflow-branch-shape", currentBranchShape);
+                        } catch (e2) {}
+                        generateFlowchart(true);
+                    }
+                });
+            });
+
+            // ----- Function Name Display -----
+            try {
+                const savedStyle = localStorage.getItem("autoflow-funcname-style");
+                if (savedStyle) funcNameStyle = savedStyle;
+            } catch (e){}
+
+            const funcNameRadios = scope.querySelectorAll('input[name="funcNameStyle"]');
+            funcNameRadios.forEach(r => {
+                if (r.value === funcNameStyle) {
+                    r.checked = true;
+                }
+                r.addEventListener("change", (e) => {
+                    if (e.target.checked) {
+                        funcNameStyle = e.target.value;
+                        try {
+                            localStorage.setItem("autoflow-funcname-style", funcNameStyle);
+                        } catch (e2){}
+                        generateFlowchart(true);
+                    }
+                });
+            });
+        }
+
+
+
         document.addEventListener("DOMContentLoaded", function() {
             const src = document.getElementById("src");
             const lineNumbers = document.getElementById("lineNumbers");
@@ -2189,77 +2356,8 @@ const HELP_TEXT_HTML = `
                 updateLineNumbers(); // 초기 1,2,3,... 표시
             }
 
-            // ----- 초기 테마 로딩 -----
-            let savedTheme = "classic";
-            try {
-                const t = localStorage.getItem("autoflow-theme");
-                if (t) savedTheme = t;
-            } catch (e) {}
-            applyTheme(savedTheme);
-
-            // 라디오 버튼 상태 동기화
-            const themeRadios = document.querySelectorAll('input[name="theme"]');
-            themeRadios.forEach(r => {
-                if (r.value === savedTheme) {
-                    r.checked = true;
-                }
-                r.addEventListener("change", (e) => {
-                    if (e.target.checked) {
-                        applyTheme(e.target.value);
-                        // 테마 바뀌면 플로우차트도 다시 그려주고 싶으면:
-                        // generateFlowchart(true);
-                    }
-                });
-            });
-
-            // Branch Shape 초기화
-            let savedBranchShape = "rounded";
-            try {
-                const bs = localStorage.getItem("autoflow-branch-shape");
-                if (bs) savedBranchShape = bs;
-            } catch (e) {}
-            currentBranchShape = savedBranchShape;
-
-            const branchRadios = document.querySelectorAll('input[name="branchShape"]');
-            branchRadios.forEach(r => {
-                if (r.value === savedBranchShape) {
-                    r.checked = true;
-                }
-                r.addEventListener("change", (e) => {
-                    if (e.target.checked) {
-                        currentBranchShape = e.target.value;
-                        try {
-                            localStorage.setItem("autoflow-branch-shape", currentBranchShape);
-                        } catch (e2) {}
-                        // 필요하면 테마처럼 자동 재생성도 가능:
-                        generateFlowchart(true);
-                    }
-                });
-            });
-
-            // ============================
-            // Function Name Display 초기화
-            // ============================
-
-            try {
-                const savedStyle = localStorage.getItem("autoflow-funcname-style");
-                if (savedStyle) funcNameStyle = savedStyle;
-            } catch (e){}
-
-            const funcNameRadios = document.querySelectorAll('input[name="funcNameStyle"]');
-            funcNameRadios.forEach(r => {
-                if (r.value === funcNameStyle) {
-                    r.checked = true;
-                }
-                r.addEventListener("change", (e) => {
-                    if (e.target.checked) {
-                        funcNameStyle = e.target.value;   // ✔ 전역 변수에 저장됨
-                        localStorage.setItem("autoflow-funcname-style", funcNameStyle);
-                        generateFlowchart(true);
-                    }
-                });
-            });
-
+            // SETTINGS 라디오들 초기화 (기본은 모달 DOM 기준)
+            initSettingsRadios(document);
 
             // ============================
             // SETTINGS 모달 드래그
