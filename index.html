@@ -435,8 +435,8 @@
             font-size: 13px;
 
             /* ✅ 1단 들여쓰기 느낌 */
-            margin: 14px 12px 8px;
-            padding: 6px 10px 6px 16px;   /* ✅ 왼쪽만 깊게 */
+            margin: 14px 16px 8px;
+            padding: 6px 10px 6px 28px;   /* ✅ 왼쪽만 깊게 */
 
             border-top: 1px solid rgba(148, 163, 184, 0.45);
             border-bottom: 1px solid rgba(148, 163, 184, 0.45);
@@ -468,7 +468,7 @@
             margin: 0;
 
             /* ✅ 2단 들여쓰기 */
-            padding: 0 10px 6px 28px;   /* left = 44px */
+            padding: 0 10px 6px 44px;   /* left = 44px */
 
             background-color: transparent;
         }
@@ -477,7 +477,7 @@
         /* 라디오 영역 */
         .modal-radio-row {
             /* ✅ 3단 들여쓰기 */
-            padding: 0 12px 0 42px;   /* left = 62px */
+            padding: 0 12px 0 62px;   /* left = 62px */
 
             display: flex;
             flex-direction: column;
@@ -2498,81 +2498,46 @@ const HELP_TEXT_HTML = `
             });
 
             // ----- Preprocessor Macros (-D) -----
-            let savedMacros = "";
-            try {
-                const m = localStorage.getItem("autoflow-macros");
-                if (m) savedMacros = m;
-            } catch (e) {}
+            macroMode = "all";
+            macroDefines = "";
 
-            let savedMacroMode = "all";
-            try {
-                const mm = localStorage.getItem("autoflow-macro-mode");
-                if (mm === "defined" || mm === "all") savedMacroMode = mm;
-            } catch (e) {}
-
-            macroDefines = savedMacros;
-            window.macroMode = savedMacroMode;   // 전역처럼 쓰고 싶으면
-
+            const macroModeRadios = scope.querySelectorAll('input[name="macroMode"]');
             const macroField = scope.querySelector("#macroInput");
-            const modeRadios = scope.querySelectorAll('input[name="macroMode"]');
 
-            function applyMacroModeUI(mode) {
-                const isDefined = (mode === "defined");
-
-                if (macroField) {
-                    macroField.disabled = !isDefined;
-                    if (!isDefined) {
-                        macroField.value = "";
-                    } else {
-                        macroField.value = savedMacros || macroField.value || "";
-                    }
-                }
+            function applyMacroUIState() {
+              if (!macroField) return;
+              if (macroMode === "defined") {
+                macroField.disabled = false;
+              } else {
+                macroField.disabled = true;
+                macroField.value = "";
+                macroDefines = "";
+                try { localStorage.removeItem("autoflow-macros"); } catch(e) {}
+              }
             }
 
-            modeRadios.forEach(r => {
-                r.checked = (r.value === savedMacroMode);
-
-                r.addEventListener("change", (e) => {
-                    if (!e.target.checked) return;
-
-                    const mode = e.target.value; // "all" | "defined"
-                    window.macroMode = mode;
-
-                    try { localStorage.setItem("autoflow-macro-mode", mode); } catch (e2) {}
-
-                    if (mode === "all") {
-                        // All이면 매크로 입력값은 비우고(= Defined 내용 제거)
-                        macroDefines = "";
-                        savedMacros = "";
-                        try { localStorage.removeItem("autoflow-macros"); } catch (e3) {}
-                    }
-
-                    applyMacroModeUI(mode);
-                    generateFlowchart(true);
-                });
+            // 라디오 이벤트
+            macroModeRadios.forEach(r => {
+              if (r.value === macroMode) r.checked = true;
+              r.addEventListener("change", (e) => {
+                if (!e.target.checked) return;
+                macroMode = e.target.value;     // all | defined
+                applyMacroUIState();
+                generateFlowchart(true);
+              });
             });
 
-            // textarea 입력
+            // textarea 입력 이벤트 (Defined일 때만 의미)
             if (macroField) {
-                macroField.value = savedMacros;
-
-                macroField.addEventListener("input", (e) => {
-                    // Defined에서만 의미 있음
-                    if (window.macroMode !== "defined") return;
-
-                    macroDefines = (e.target.value || "").trim();
-                    savedMacros = macroDefines;
-
-                    try {
-                        localStorage.setItem("autoflow-macros", macroDefines);
-                    } catch (e2) {}
-
-                    generateFlowchart(true);
-                });
+              macroField.value = "";
+              macroField.addEventListener("input", (e) => {
+                macroDefines = (e.target.value || "").trim();
+                try { localStorage.setItem("autoflow-macros", macroDefines); } catch(e2) {}
+                generateFlowchart(true);
+              });
             }
 
-            // 초기 UI 적용
-            applyMacroModeUI(savedMacroMode);
+            applyMacroUIState();
         }
 
 
@@ -2972,32 +2937,30 @@ void main(void)
 
             <!-- Preprocessor Macros 섹션 -->
             <div class="modal-section macro-section">
-                <div class="modal-section-title">Preprocessor Macros (-D)</div>
+              <div class="modal-section-title">Preprocessor Macros (-D)</div>
 
-                <div class="modal-radio-row">
-                    <!-- All / Defined -->
-                    <label>
-                        <input type="radio" name="macroMode" value="all" checked />
-                        All
-                    </label>
+              <div class="modal-radio-row">
+                <label>
+                  <input type="radio" name="macroMode" value="all" checked />
+                  All
+                </label>
 
-                    <label>
-                        <input type="radio" name="macroMode" value="defined" />
-                        Defined
-                    </label>
+                <label>
+                  <input type="radio" name="macroMode" value="defined" />
+                  Defined
+                </label>
 
-                    <!-- Defined 아래에 textarea -->
-                    <div class="macro-defined-wrap">
-                        <label for="macroInput" class="macro-hint">
-                            Example: <code>DEBUG;TEST=2;RELEASE</code>
-                        </label>
-                        <textarea
-                            id="macroInput"
-                            class="macro-input"
-                            rows="3"
-                            placeholder="Type macros like: DEBUG;TEST=2;RELEASE"></textarea>
-                    </div>
-                </div>
+                <label for="macroInput" style="font-size:12px; opacity:0.9; margin:4px 0 2px;">
+                  Example: <code>DEBUG;TEST=2;RELEASE</code>
+                </label>
+
+                <textarea
+                  id="macroInput"
+                  class="macro-input"
+                  rows="3"
+                  placeholder="Type macros like: DEBUG;TEST=2;RELEASE"
+                  disabled></textarea>
+              </div>
             </div>
         </div>
     </div>
