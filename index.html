@@ -1371,8 +1371,11 @@ const HELP_TEXT_HTML = `
           });
 
           // svg2pdf 호출
-          await window.svg2pdf(cloned, pdf, { xOffset: 0, yOffset: 0, scale: 1 });
-
+          await window.svg2pdf.svg2pdf(cloned, pdf, {
+            xOffset: 0,
+            yOffset: 0,
+            scale: 1
+          });
           pdf.save(getCurrentFilename("pdf"));
         }          
 
