@@ -516,6 +516,7 @@
 
 	// 전역 선언 (어디서든 접근 가능)
         let funcNameStyle = "short";
+        let macroDefines  = "";      // -D 매크로 문자열 (프론트에서 입력받는 값)           
 
 	// 서버에서 내려준 사용량 / 한도 (없으면 null)
         window.__serverUsageCount = null;
@@ -1893,6 +1894,12 @@ const HELP_TEXT_HTML = `
             formData.append("branch_shape", currentBranchShape);
             formData.append("func_name_style", funcNameStyle);
 
+            // 미니 전처리기용 매크로 정의 문자열 전달
+            if (typeof macroDefines === "string" && macroDefines.trim().length > 0) {
+                formData.append("macro_defines", macroDefines.trim());
+            }
+            
+
             try {
                 // ① Supabase에서 access_token 가져오기
                 let accessToken = null;
@@ -2416,6 +2423,28 @@ const HELP_TEXT_HTML = `
                     }
                 });
             });
+
+            // ----- Preprocessor Macros (-D) -----
+            let savedMacros = "";
+            try {
+                const m = localStorage.getItem("autoflow-macros");
+                if (m) savedMacros = m;
+            } catch (e) {}
+
+            macroDefines = savedMacros;
+
+            const macroField = scope.querySelector("#macroInput");
+            if (macroField) {
+                macroField.value = savedMacros;
+                macroField.addEventListener("input", (e) => {
+                    macroDefines = (e.target.value || "").trim();
+                    try {
+                        localStorage.setItem("autoflow-macros", macroDefines);
+                    } catch (e2) {}
+                    // 매크로가 바뀌면 즉시 플로우차트 다시 생성
+                    generateFlowchart(true);
+                });
+            }            
         }
 
 
@@ -2799,6 +2828,32 @@ void main(void)
                     </label>
                 </div>
             </div>
+
+            <!-- Preprocessor Macros 섹션 -->
+            <div class="modal-section">
+                <div class="modal-section-title">Preprocessor Macros (-D)</div>
+                <div class="modal-radio-row">
+                    <label for="macroInput" style="font-size:12px; opacity:0.9; margin-bottom:4px;">
+                        Example: <code>DEBUG;TEST=2;RELEASE</code>
+                    </label>
+                    <textarea
+                        id="macroInput"
+                        rows="3"
+                        style="
+                            width:100%;
+                            resize: vertical;
+                            font-size:12px;
+                            font-family: Consolas, 'Roboto Mono', monospace;
+                            padding:4px 6px;
+                            border-radius:4px;
+                            border:1px solid rgba(148,163,184,0.6);
+                            background-color: var(--bg-code);
+                            color: var(--code-text);
+                        "
+                        placeholder="Type macros like: DEBUG;TEST=2;RELEASE"></textarea>
+                </div>
+            </div>
+
 
             <!-- ✅ Contact + Close footer -->
             <div class="modal-footer">
