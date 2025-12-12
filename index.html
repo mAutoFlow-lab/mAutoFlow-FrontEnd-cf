@@ -433,18 +433,28 @@
         .modal-group-title{
             font-weight: 700;
             font-size: 13px;
-            margin: 14px 16px 8px;   /* 4px → 16px */
-            padding: 6px 10px;
+
+            /* ✅ 1단 들여쓰기 느낌 */
+            margin: 14px 16px 8px;
+            padding: 6px 10px 6px 28px;   /* ✅ 왼쪽만 깊게 */
+
             border-top: 1px solid rgba(148, 163, 184, 0.45);
             border-bottom: 1px solid rgba(148, 163, 184, 0.45);
         }
+
                            
 
         /* 섹션 위쪽에만 가로선 하나 (좌우 여백 있음) */
         .modal-section::before {
+            content: "";
+            display: block;
+
             border-top: 1px solid rgba(148, 163, 184, 0.35);
-            margin: 0 6px 10px;   /* ← 16px → 6px */
+
+            /* ✅ 그룹 타이틀(1단) 시작점과 맞춤 */
+            margin: 0 16px 10px 28px;
         }
+
                    
         /* 첫 섹션은 맨 위 선 제거 */
         .modal-section:first-of-type::before {
@@ -456,21 +466,27 @@
         .modal-section-title {
             font-weight: 600;
             margin: 0;
-            padding: 0 10px 6px;  /* 좌우 여백 + 아래쪽만 살짝 간격 */
-            background-color: transparent;      /* 상단 바탕도 동일 색 */
+
+            /* ✅ 2단 들여쓰기 */
+            padding: 0 10px 6px 44px;   /* left = 44px */
+
+            background-color: transparent;
         }
+
 
         /* 라디오 영역 */
         .modal-radio-row {
-            padding: 0 12px 0;
+            /* ✅ 3단 들여쓰기 */
+            padding: 0 12px 0 62px;   /* left = 62px */
+
             display: flex;
             flex-direction: column;
             gap: 6px;
         }
 
-        /* Macro 섹션만 좌우 padding 제거 */
+        /* ✅ Macro 섹션도 옵션 레벨(3단) 들여쓰기 유지 */
         .macro-section .modal-radio-row {
-            padding: 0;
+            padding: 0 12px 0 62px;
         }
             
         .modal-footer {
