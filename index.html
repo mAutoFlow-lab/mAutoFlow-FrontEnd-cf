@@ -412,6 +412,14 @@
             cursor: pointer;
             font-size: 16px;
         }
+
+        /* SETTINGS - Macro Input width alignment */
+        #macroInput {
+            width: calc(100% - 32px);
+            margin: 0 16px;
+            box-sizing: border-box;
+        }
+                   
         /* SETTINGS 카드 섹션 */
         .modal-section {
             /* 위/아래 간격 + 좌우 살짝 여백 */
@@ -424,7 +432,7 @@
         .modal-group-title{
             font-weight: 700;
             font-size: 13px;
-            margin: 14px 4px 8px;
+            margin: 14px 16px 8px;   /* 4px → 16px */
             padding: 6px 10px;
             border-top: 1px solid rgba(148, 163, 184, 0.45);
             border-bottom: 1px solid rgba(148, 163, 184, 0.45);
@@ -436,7 +444,7 @@
             content: "";
             display: block;
             border-top: 1px solid rgba(148, 163, 184, 0.35);
-            margin: 0 8px 10px;   /* ←→ 여백 8px, 아래로 10px 떨어뜨림 */
+            margin: 0 16px 10px;   /* 8px → 16px (선이 더 길어짐) */
         }
 
         /* 첫 섹션은 맨 위 선 제거 */
@@ -2855,7 +2863,6 @@ void main(void)
                         id="macroInput"
                         rows="3"
                         style="
-                            width:100%;
                             resize: vertical;
                             font-size:12px;
                             font-family: Consolas, 'Roboto Mono', monospace;
