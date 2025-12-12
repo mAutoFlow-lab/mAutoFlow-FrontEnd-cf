@@ -1123,6 +1123,8 @@ const HELP_TEXT_HTML = `
 
             // 기존 SETTINGS 모달 안의 패널 내용을 템플릿으로 활용
             const overlay = document.getElementById("settingsOverlay");
+            if (overlay) overlay.classList.add("modal-hidden");
+            
             const panel   = overlay ? overlay.querySelector(".modal-panel") : null;
             if (!panel) {
                 // 혹시 못 찾으면 에러 문구만 표시
