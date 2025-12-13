@@ -1352,38 +1352,8 @@ const HELP_TEXT_HTML = `
             downloadAsSVG();
             return;
           }
-          // png/pdf는 백엔드에서 렌더링해서 받기
-          await downloadViaBackend(downloadFormat);
-        }
-
-        async function downloadViaBackend(format) {
-          const svgEl = document.querySelector("#chartInner svg");
-          if (!svgEl) {
-            alert("There is no flowchart to download yet.");
-            return;
-          }
-
-          const serializer = new XMLSerializer();
-          const svgText = serializer.serializeToString(svgEl);
-
-          const formData = new FormData();
-          formData.append("svg", svgText);
-          formData.append("format", format); // png | pdf
-
-          const res = await fetch(API_BASE + "/api/export", {
-            method: "POST",
-            body: formData,
-          });
-
-          if (!res.ok) {
-            throw new Error("Export failed");
-          }
-
-          const blob = await res.blob();
-          const url = URL.createObjectURL(blob);
-
-          triggerDownload(url, getCurrentFilename(format));
-          setTimeout(() => URL.revokeObjectURL(url), 1000);
+          // ✅ png/pdf는 source_code를 보내는 downloadFromServer를 써야 함
+          await downloadFromServer(downloadFormat);
         }
         
         let typingTimer = null;
