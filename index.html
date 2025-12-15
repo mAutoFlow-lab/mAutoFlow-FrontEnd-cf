@@ -2473,8 +2473,8 @@ const HELP_TEXT_HTML = `
               macroField.value = restored;
 
               // ✅ (2) 중복 이벤트 방지 (initSettingsRadios가 여러 번 호출됨)
-              if (!macroField.dataset.bound) {
-                macroField.dataset.bound = "1";
+              if (!macroField.__autoflowBound) {
+                macroField.__autoflowBound = true;
                 macroField.addEventListener("input", (e) => {
                   macroDefines = (e.target.value || "").trim();
                   try { localStorage.setItem("autoflow-macros", macroDefines); } catch (e2) {}
