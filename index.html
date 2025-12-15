@@ -2439,6 +2439,8 @@ const HELP_TEXT_HTML = `
               if (!macroField) return;
               if (macroMode === "defined") {
                 macroField.disabled = false;
+                // ✅ Defined로 들어오면 현재 UI값을 전역에도 반영
+                macroDefines = (macroField.value || "").trim();
               } else {
                 macroField.disabled = true;
                 macroField.value = "";
@@ -2460,12 +2462,25 @@ const HELP_TEXT_HTML = `
 
             // textarea 입력 이벤트 (Defined일 때만 의미)
             if (macroField) {
-              macroField.value = "";
-              macroField.addEventListener("input", (e) => {
-                macroDefines = (e.target.value || "").trim();
-                try { localStorage.setItem("autoflow-macros", macroDefines); } catch(e2) {}
-                generateFlowchart(true);
-              });
+              // ✅ (1) 초기화 금지: 기존 값 복원
+              // 우선순위: 현재 전역 macroDefines -> localStorage -> ""
+              let saved = "";
+              try { saved = localStorage.getItem("autoflow-macros") || ""; } catch (e) {}
+              const restored = (macroDefines && macroDefines.trim().length > 0)
+                ? macroDefines
+                : saved;
+
+              macroField.value = restored;
+
+              // ✅ (2) 중복 이벤트 방지 (initSettingsRadios가 여러 번 호출됨)
+              if (!macroField.dataset.bound) {
+                macroField.dataset.bound = "1";
+                macroField.addEventListener("input", (e) => {
+                  macroDefines = (e.target.value || "").trim();
+                  try { localStorage.setItem("autoflow-macros", macroDefines); } catch (e2) {}
+                  generateFlowchart(true);
+                });
+              }
             }
 
             applyMacroUIState();
