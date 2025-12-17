@@ -1227,6 +1227,11 @@ const HELP_TEXT_HTML = `
         }
 
         async function openShare() {
+          if (getShareIdFromPath()) {
+            setStatus("info", "This is a shared view-only page.");
+            return;
+          }  
+            
           // 로그인한 사용자만
           if (!window.currentUser) {
             alert("Please log in to use Share.");
@@ -1338,6 +1343,47 @@ const HELP_TEXT_HTML = `
           try { applyDiagramZoom(); } catch(e) {}
           try { setTimeout(attachNodeClickHandlers, 50); } catch(e) {}
         }
+
+        function applyShareViewMode() {
+          // 1) 상단 헤더 버튼 숨김
+          const hide = (sel) => {
+            const el = document.querySelector(sel);
+            if (el) el.style.display = "none";
+          };
+
+          // 로그인/로그아웃 영역 자체 숨김(공유 페이지는 View-only로 깔끔하게)
+          hide("#loggedOutButtons");
+          hide("#loggedInButtons");
+
+          // 기능 버튼들 숨김
+          hide('button[onclick="openShare()"]');
+          hide('button[onclick="downloadDiagram()"]');
+          hide('button[onclick="openSettings()"]');
+          hide("#helpToggleBtn");
+          hide('button[onclick="openProCheckout()"]');
+
+          // 2) 툴바: "Regenerate Now" 숨김 + 기타 정보는 선택
+          // (공유 페이지에서는 생성 버튼이 의미 없으니 숨김)
+          const regenBtn = document.querySelector('#toolbar button[onclick^="generateFlowchart"]');
+          if (regenBtn) regenBtn.style.display = "none";
+
+          // 원하면 상태/함수/쿼터도 숨겨서 더 깔끔하게
+          // const cur = document.getElementById("currentFunc");
+          // if (cur) cur.style.display = "none";
+          // const quota = document.getElementById("quotaInfo");
+          // if (quota) quota.style.display = "none";
+
+          // 3) 좌측 편집기 쪽은 읽기전용(이미 하고 있지만, 공유 모드에서 확실히)
+          const src = document.getElementById("src");
+          if (src) {
+            src.disabled = true;
+          }
+
+          // 4) "Automatic analysis" 같은 부가 문구가 있으면 숨기고 싶을 때(선택)
+          // const auto = document.querySelector("#leftPane .pane-header .pane-title + span");
+          // if (auto) auto.style.display = "none";
+        }
+
 
         async function loadSharedDiagram(shareId) {
           try {
@@ -2744,6 +2790,7 @@ const HELP_TEXT_HTML = `
             // ✅ 공유 링크로 들어온 경우: /share/<id> mermaid_code 로드해서 바로 렌더
             const shareId = getShareIdFromPath();
             if (shareId) {
+                applyShareViewMode();
                 await loadSharedDiagram(shareId);
                 return; // 공유 페이지에서는 일반 초기 플로우차트 생성 흐름을 타지 않게 종료
             }
