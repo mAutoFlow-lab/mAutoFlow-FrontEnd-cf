@@ -1382,6 +1382,24 @@ const HELP_TEXT_HTML = `
           // 4) "Automatic analysis" 같은 부가 문구가 있으면 숨기고 싶을 때(선택)
           // const auto = document.querySelector("#leftPane .pane-header .pane-title + span");
           // if (auto) auto.style.display = "none";
+            
+          // 5) 공유 페이지 전용 레이아웃: 좌측 패널 숨기고 우측을 100%로
+          const leftPane = document.getElementById("leftPane");
+          if (leftPane) leftPane.style.display = "none";
+
+          const divider = document.getElementById("divider");
+          if (divider) divider.style.display = "none";
+
+          const rightPane = document.getElementById("rightPane");
+          if (rightPane) {
+            rightPane.style.flex = "1 1 100%";
+            rightPane.style.minWidth = "0";
+            rightPane.style.width = "100%";
+          }
+
+          // (선택) 전체 컨테이너 패딩/여백을 줄이고 싶으면 사용
+          // const main = document.querySelector(".main");
+          // if (main) main.style.gap = "0";
         }
 
 
