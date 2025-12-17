@@ -1318,6 +1318,65 @@ const HELP_TEXT_HTML = `
                    
 
         // ============================
+        //  SHARE 페이지 로딩(/share/<id>)
+        // ============================
+
+        function getShareIdFromPath() {
+          // 예: /share/4e9203e9-0602-42d4-9016-b1b9a8a04ecc
+          const m = window.location.pathname.match(/^\/share\/([0-9a-fA-F-]{36})\/?$/);
+          return m ? m[1] : null;
+        }
+
+        function renderSharedMermaid(mermaidCode) {
+          const chartInner = document.getElementById("chartInner");
+          if (!chartInner) return;
+
+          chartInner.innerHTML = `<div class="mermaid">${mermaidCode}</div>`;
+          mermaid.init(undefined, chartInner.querySelector(".mermaid"));
+
+          // 기존 코드에 있는 확대/클릭핸들러도 그대로 재사용
+          try { applyDiagramZoom(); } catch(e) {}
+          try { setTimeout(attachNodeClickHandlers, 50); } catch(e) {}
+        }
+
+        async function loadSharedDiagram(shareId) {
+          try {
+            // ✅ (중요) 요구사항: 비로그인도 열람 가능
+            //  - 백엔드를 "토큰 없어도 조회 가능"으로 바꿔야 함 (아래 app.py 수정 참고)
+            const res = await fetch(`${API_BASE}/api/share/${shareId}`);
+            if (!res.ok) {
+              const txt = await res.text().catch(() => "");
+              setStatus("error", `Share load failed (HTTP ${res.status}) ${txt}`);
+              return;
+            }
+
+            const data = await res.json();
+            const mermaidCode = (data.mermaid_code || "").trim();
+            if (!mermaidCode) {
+              setStatus("error", "Shared diagram is empty.");
+              return;
+            }
+
+            // 전역에도 저장 (다운로드/재공유 등에 활용 가능)
+            window.__lastMermaidCode = mermaidCode;
+
+            // UX: 공유 페이지에서는 좌측 코드 입력을 읽기 전용 처리(원하면 지워도 됨)
+            const src = document.getElementById("src");
+            if (src) {
+              src.value = "/* Shared diagram (read-only) */";
+              src.disabled = true;
+            }
+
+            renderSharedMermaid(mermaidCode);
+            setStatus("success", "Shared diagram loaded.");
+          } catch (e) {
+            console.error(e);
+            setStatus("error", "Failed to load shared diagram.");
+          }
+        }
+
+
+        // ============================
         //  Download 헬퍼들
         // ============================
 
@@ -2658,7 +2717,7 @@ const HELP_TEXT_HTML = `
             });
         }
 
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", async function() {
             const src = document.getElementById("src");
             const lineNumbers = document.getElementById("lineNumbers");
 
@@ -2680,6 +2739,13 @@ const HELP_TEXT_HTML = `
                     lineNumbers.scrollTop = src.scrollTop;  // 스크롤 동기화
                 });
                 updateLineNumbers(); // 초기 1,2,3,... 표시
+            }
+
+            // ✅ 공유 링크로 들어온 경우: /share/<id> mermaid_code 로드해서 바로 렌더
+            const shareId = getShareIdFromPath();
+            if (shareId) {
+                await loadSharedDiagram(shareId);
+                return; // 공유 페이지에서는 일반 초기 플로우차트 생성 흐름을 타지 않게 종료
             }
 
             // SETTINGS 라디오들 초기화 (기본은 모달 DOM 기준)
