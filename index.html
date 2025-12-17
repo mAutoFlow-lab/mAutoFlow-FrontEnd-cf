@@ -1291,7 +1291,7 @@ const HELP_TEXT_HTML = `
             }
 
             // ✅ 4) 최종 링크 구성 (네가 원하는 형식)
-            const url = `https://mautoflow-frontend.pages.dev/share/${share_id}`;
+            const url = `${window.location.origin}/share/${share_id}`;
             window.__lastShareId = share_id;
 
             input.value = url;
@@ -3225,7 +3225,7 @@ void main(void)
                 provider: "google",
                 options: {
                     // redirectTo: "https://mautoflow-lab.netlify.app",  // Netlify 실제 URL
-                    redirectTo: "https://mautoflow-frontend.pages.dev",  // Cloudflare URL
+                    redirectTo: "https://mautoflow-frontend-cf.pages.dev",  // Cloudflare URL
                     queryParams: {
                         // 매번 계정 선택 화면 강제
                         prompt: "select_account"
