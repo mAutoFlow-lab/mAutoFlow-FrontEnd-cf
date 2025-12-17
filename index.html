@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8" />
@@ -593,8 +594,8 @@
 
 	let lastCountedSource = "";   // 마지막으로 사용량을 올렸던 소스 코드
 
-	// ✅ 테스트 전용 계정 (무제한)
-        const TEST_EMAIL = "exitgiveme@gmail.com";
+        // ✅ 테스트 전용 계정 (무제한) - module에서도 쓰기 위해 전역(window)에 등록
+        window.TEST_EMAIL = "exitgiveme@gmail.com";
 
         // ===== 하루 무료 사용량 설정 =====
         const DAILY_FREE_LIMIT = 5;       // 하루 무료 5회
@@ -1350,76 +1351,35 @@ const HELP_TEXT_HTML = `
         }
 
         function applyShareViewMode() {
-          // 1) 상단 헤더 버튼 숨김
           const hide = (sel) => {
             const el = document.querySelector(sel);
             if (el) el.style.display = "none";
           };
 
-          // 로그인/로그아웃 영역 자체 숨김(공유 페이지는 View-only로 깔끔하게)
           hide("#loggedOutButtons");
           hide("#loggedInButtons");
-
-          // 기능 버튼들 숨김
           hide('button[onclick="openShare()"]');
           hide('button[onclick="downloadDiagram()"]');
           hide('button[onclick="openSettings()"]');
           hide("#helpToggleBtn");
           hide('button[onclick="openProCheckout()"]');
 
-          // 2) 툴바: "Regenerate Now" 숨김 + 기타 정보는 선택
-          // (공유 페이지에서는 생성 버튼이 의미 없으니 숨김)
           const regenBtn = document.querySelector('#toolbar button[onclick^="generateFlowchart"]');
           if (regenBtn) regenBtn.style.display = "none";
 
-          // 원하면 상태/함수/쿼터도 숨겨서 더 깔끔하게
-          // const cur = document.getElementById("currentFunc");
-          // if (cur) cur.style.display = "none";
-          // const quota = document.getElementById("quotaInfo");
-          // if (quota) quota.style.display = "none";
-
-          // 3) 좌측 편집기 쪽은 읽기전용(이미 하고 있지만, 공유 모드에서 확실히)
-          const src = document.getElementById("src");
-          if (src) {
-            src.disabled = true;
-          }
-
-          // 4) "Automatic analysis" 같은 부가 문구가 있으면 숨기고 싶을 때(선택)
-          // const auto = document.querySelector("#leftPane .pane-header .pane-title + span");
-          // if (auto) auto.style.display = "none";
-            
-          // 5) 공유 페이지 전용 레이아웃: 좌측 패널 숨기고 우측을 100%로
-          const leftPane = document.getElementById("leftPane");
-          if (leftPane) leftPane.style.display = "none";
-
-          const divider = document.getElementById("divider");
-          if (divider) divider.style.display = "none";
-
-          const rightPane = document.getElementById("rightPane");
-          if (rightPane) {
-            rightPane.style.flex = "1 1 100%";
-            rightPane.style.minWidth = "0";
-            rightPane.style.width = "100%";
-          }
-
-          // (선택) 전체 컨테이너 패딩/여백을 줄이고 싶으면 사용
-          // const main = document.querySelector(".main");
-          // if (main) main.style.gap = "0";
-
-          // ✅ 0) 공유 페이지 상단 메시지/여백 정리
           const subtitle = document.querySelector("header .subtitle");
           if (subtitle) subtitle.style.display = "none";
 
           const header = document.querySelector("header");
-          if (header) {
-            header.style.padding = "6px 12px";     // 기존 10px 16px -> 더 컴팩트
-          }
+          if (header) header.style.padding = "6px 12px";
 
-          // 제목도 약간 줄이고 싶으면(선택)
           const h1 = document.querySelector("header h1");
           if (h1) h1.style.fontSize = "18px";
 
-          // ✅ 공유 페이지는 우측 패널만 100%로
+          // ✅ 여기서만 한 번씩 선언
+          const src = document.getElementById("src");
+          if (src) src.disabled = true;
+
           const leftPane = document.getElementById("leftPane");
           if (leftPane) leftPane.style.display = "none";
 
@@ -1431,14 +1391,11 @@ const HELP_TEXT_HTML = `
             rightPane.style.flex = "1 1 100%";
             rightPane.style.minWidth = "0";
             rightPane.style.width = "100%";
-            rightPane.style.padding = "6px";       // 기존 8px -> 살짝 줄임
+            rightPane.style.padding = "6px";
           }
 
-          // ✅ Flowchart 내부 여백도 줄여서 화면을 더 꽉 채움
           const chartInner = document.getElementById("chartInner");
-          if (chartInner) {
-            chartInner.style.margin = "0";         // 기존 margin: 8px
-          }       
+          if (chartInner) chartInner.style.margin = "0";
         }
 
 
@@ -3494,7 +3451,7 @@ void main(void)
                 loggedOutDiv.style.display = "none";
                 loggedInDiv.style.display  = "inline-flex";
 
-                const isTestUser = (user.email === TEST_EMAIL);
+                const isTestUser = (user.email === window.TEST_EMAIL);
 
                 // UPGRADE 버튼: 테스트 계정은 숨기고, 나머지는 일단 표시
                 if (upgradeBtn) {
@@ -3535,11 +3492,11 @@ void main(void)
             }
 
             // 로그인/로그아웃 시 무료 사용량 표시 갱신 (위에서 상태 정리 후 호출)
-            updateQuotaInfo();
+            window.updateQuotaInfo?.();
 
             // 로그인 상태라면 Supabase에서 구독/플랜 정보도 한 번 더 불러와서 반영
             if (user) {
-                refreshPlanFromSupabase();
+                window.refreshPlanFromSupabase?.();
             }
         }
 
