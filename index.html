@@ -1342,6 +1342,11 @@ const HELP_TEXT_HTML = `
           // 기존 코드에 있는 확대/클릭핸들러도 그대로 재사용
           try { applyDiagramZoom(); } catch(e) {}
           try { setTimeout(attachNodeClickHandlers, 50); } catch(e) {}
+
+          // ✅ (추가) 공유 페이지는 초기 100% 대신 화면맞춤
+          setTimeout(() => {
+            try { fitDiagramToScreen(24); } catch(_) {}
+          }, 80);
         }
 
         function applyShareViewMode() {
@@ -1400,6 +1405,40 @@ const HELP_TEXT_HTML = `
           // (선택) 전체 컨테이너 패딩/여백을 줄이고 싶으면 사용
           // const main = document.querySelector(".main");
           // if (main) main.style.gap = "0";
+
+          // ✅ 0) 공유 페이지 상단 메시지/여백 정리
+          const subtitle = document.querySelector("header .subtitle");
+          if (subtitle) subtitle.style.display = "none";
+
+          const header = document.querySelector("header");
+          if (header) {
+            header.style.padding = "6px 12px";     // 기존 10px 16px -> 더 컴팩트
+          }
+
+          // 제목도 약간 줄이고 싶으면(선택)
+          const h1 = document.querySelector("header h1");
+          if (h1) h1.style.fontSize = "18px";
+
+          // ✅ 공유 페이지는 우측 패널만 100%로
+          const leftPane = document.getElementById("leftPane");
+          if (leftPane) leftPane.style.display = "none";
+
+          const divider = document.getElementById("divider");
+          if (divider) divider.style.display = "none";
+
+          const rightPane = document.getElementById("rightPane");
+          if (rightPane) {
+            rightPane.style.flex = "1 1 100%";
+            rightPane.style.minWidth = "0";
+            rightPane.style.width = "100%";
+            rightPane.style.padding = "6px";       // 기존 8px -> 살짝 줄임
+          }
+
+          // ✅ Flowchart 내부 여백도 줄여서 화면을 더 꽉 채움
+          const chartInner = document.getElementById("chartInner");
+          if (chartInner) {
+            chartInner.style.margin = "0";         // 기존 margin: 8px
+          }       
         }
 
 
@@ -1597,6 +1636,69 @@ const HELP_TEXT_HTML = `
             svg.style.width = percent + "%";
             svg.style.height = "auto";
         }
+
+        // ✅ 화면 맞춤(Fit to screen): 현재 SVG 전체가 컨테이너 안에 들어오도록 zoom 자동 계산
+        function fitDiagramToScreen(padding = 16) {
+            const container = document.getElementById("chartContainer");
+            const svg = document.querySelector("#chartInner svg");
+            if (!container || !svg) return;
+
+            // 컨테이너 가용 영역
+            const cw = Math.max(1, container.clientWidth  - padding);
+            const ch = Math.max(1, container.clientHeight - padding);
+
+            // SVG의 "기본" 크기 추정 (Mermaid SVG는 보통 width/height 또는 viewBox가 존재)
+            let sw = 0, sh = 0;
+
+            try {
+                // 1순위: viewBox 기반 (가장 안정적)
+                const vb = svg.viewBox && svg.viewBox.baseVal;
+                if (vb && vb.width && vb.height) {
+                    sw = vb.width;
+                    sh = vb.height;
+                }
+            } catch (_) {}
+
+            try {
+                // 2순위: width/height 속성
+                if ((!sw || !sh) && svg.width && svg.height) {
+                    const w = parseFloat(svg.getAttribute("width"));
+                    const h = parseFloat(svg.getAttribute("height"));
+                    if (Number.isFinite(w) && Number.isFinite(h)) {
+                        sw = w; sh = h;
+                    }
+                }
+            } catch (_) {}
+
+            try {
+                // 3순위: bbox
+                if (!sw || !sh) {
+                    const bb = svg.getBBox();
+                    if (bb && bb.width && bb.height) {
+                        sw = bb.width;
+                        sh = bb.height;
+                    }
+                }
+            } catch (_) {}
+
+            if (!sw || !sh) return;
+
+            // "전체가 들어오도록" 비율 계산 (여유를 조금 주고 싶으면 0.98 같은 값 곱해도 됨)
+            let z = Math.min(cw / sw, ch / sh);
+
+            // 너무 작아지지 않게 최소값(공유 페이지에서 작을 수 있어서 0.2 정도 허용)
+            if (z < 0.2) z = 0.2;
+
+            diagramZoom = z;           // ✅ 전역 줌 갱신
+            applyDiagramZoom();
+            updateZoomLabel();
+
+            // ✅ Fit 후에는 좌상단으로 몰려 보일 수 있어서 상단/좌측 0으로 초기화 (선택)
+            container.scrollLeft = 0;
+            container.scrollTop  = 0;
+        }
+
+        
 
         // ✅ 부드러운 스크롤 애니메이션 (container 전용)
         function smoothScrollTo(container, targetLeft, targetTop, duration = 260) {
