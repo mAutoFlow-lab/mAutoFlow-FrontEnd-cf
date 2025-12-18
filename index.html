@@ -645,119 +645,120 @@
             }
         }
 	
-	
 const HELP_TEXT_HTML = `
-        <h2 style="margin-top:0;">mAutoFlow – Help</h2>
+          <h2 style="margin-top:0;">mAutoFlow – Help</h2>
 
-        <p>
+          <p>
             mAutoFlow converts C / pseudo-C functions into a structured flowchart.
             The left side is the source editor and the right side is the diagram viewer.
             Code and nodes are synchronized in both directions.
-        </p>
+          </p>
 
-        <h3>1. Basic Concept</h3>
-        <ul>
+          <h3>1. Basic Concept</h3>
+          <ul>
             <li>mAutoFlow focuses on <strong>a single function</strong> at a time.</li>
             <li>When you type or paste C code on the left, mAutoFlow finds a function.</li>
             <li>The body of the selected function is analyzed and rendered as a flowchart on the right.</li>
             <li>
-                Use the <strong>HELP</strong> button in the top-right toolbar to switch between
-                <strong>Code view</strong> and <strong>Help view</strong>.
-                When Help is open, the button label becomes <strong>CODE</strong>; click it again to return to the editor.
+              Use the <strong>HELP</strong> button in the top-right toolbar to switch between
+              <strong>Code view</strong> and <strong>Help view</strong>.
+              When Help is open, the button label becomes <strong>CODE</strong>; click it again to return to the editor.
             </li>
-        </ul>
+          </ul>
 
-        <h3>2. Writing / Pasting Code</h3>
-        <ul>
+          <h3>2. Writing / Pasting Code</h3>
+          <ul>
             <li>Paste normal C code or pseudo-C code into the editor.</li>
             <li>Function prototypes and global variables are allowed; mAutoFlow focuses on the chosen function body.</li>
             <li>Supported constructs:
-                <ul>
-                    <li><code>if / else if / else</code></li>
-                    <li><code>for</code>, <code>while</code>, <code>do…while</code></li>
-                    <li><code>switch / case / default</code></li>
-                    <li><code>return</code>, <code>break</code>, <code>continue</code></li>
-                    <li>Simple assignments and expressions (e.g. <code>x++;</code>, <code>flag = true;</code>)</li>
-                </ul>
+              <ul>
+                <li><code>if / else if / else</code></li>
+                <li><code>for</code>, <code>while</code>, <code>do…while</code></li>
+                <li><code>switch / case / default</code></li>
+                <li><code>return</code>, <code>break</code>, <code>continue</code></li>
+                <li>Simple assignments and expressions (e.g. <code>x++;</code>, <code>flag = true;</code>)</li>
+              </ul>
             </li>
-            <li>Very complex or unusual syntax may not be visualized perfectly, 
-                but the main control flow should still appear.</li>
-        </ul>
+            <li>
+              Very complex or unusual syntax may not be visualized perfectly,
+              but the main control flow should still appear.
+            </li>
+          </ul>
 
-        <h3>3. Automatic Refresh</h3>
-        <ul>
+          <h3>3. Automatic Refresh</h3>
+          <ul>
             <li>mAutoFlow watches your typing in the left editor.</li>
             <li>After a short idle delay, the flowchart is automatically regenerated.</li>
             <li>If you do not want to wait, press <strong>“Regenerate Now”</strong> to force an immediate update.</li>
-        </ul>
+          </ul>
 
-        <h3>4. Code ⇄ Flowchart Synchronization</h3>
-        <ul>
+          <h3>4. Code ⇄ Flowchart Synchronization</h3>
+          <ul>
             <li><strong>From code to flowchart</strong>:
-                <ul>
-                    <li>Click a line in the editor (or move the caret).</li>
-                    <li>The best-matching node in the chart is highlighted in red.</li>
-                    <li>The diagram view automatically scrolls to keep the node visible.</li>
-                </ul>
+              <ul>
+                <li>Click a line in the editor (or move the caret).</li>
+                <li>The best-matching node in the chart is highlighted in red.</li>
+                <li>The diagram view automatically scrolls to keep the node visible.</li>
+              </ul>
             </li>
             <li><strong>From flowchart to code</strong>:
-                <ul>
-                    <li>Click a node on the diagram.</li>
-                    <li>The corresponding line in the editor is selected.</li>
-                    <li>The editor scrolls so the line is centered vertically.</li>
-                    <li>“start / end / merge” nodes are ignored to avoid meaningless jumps.</li>
-                </ul>
+              <ul>
+                <li>Click a node on the diagram.</li>
+                <li>The corresponding line in the editor is selected.</li>
+                <li>The editor scrolls so the line is centered vertically.</li>
+                <li>“start / end / merge” nodes are ignored to avoid meaningless jumps.</li>
+              </ul>
             </li>
             <li>A fuzzy matching algorithm is used, so minor formatting differences are tolerated.</li>
-        </ul>
+          </ul>
 
-        <h3>5. Zooming & Panning the Diagram</h3>
-        <ul>
+          <h3>5. Zooming & Panning the Diagram</h3>
+          <ul>
             <li>Use the buttons in the Flowchart header:
-                <ul>
-                    <li><strong>−</strong>: zoom out</li>
-                    <li><strong>100%</strong>: reset zoom</li>
-                    <li><strong>+</strong>: zoom in</li>
-                </ul>
+              <ul>
+                <li><strong>−</strong>: zoom out</li>
+                <li><strong>100%</strong>: reset zoom</li>
+                <li><strong>+</strong>: zoom in</li>
+              </ul>
             </li>
             <li><strong>Ctrl + mouse wheel</strong> over the diagram zooms as well.</li>
             <li><strong>Left-drag</strong> to pan when the chart is larger than the viewport.</li>
             <li>The current zoom level is shown on the right side of the toolbar.</li>
-        </ul>
+          </ul>
 
-        <h3>6. Downloading the Diagram</h3>
-        <ul>
+          <h3>6. Downloading the Diagram</h3>
+          <ul>
             <li>Click the <strong>DOWNLOAD</strong> button in the top-right toolbar.</li>
             <li>The current flowchart is exported as an <strong>SVG</strong> file.</li>
             <li>File name is based on the current function name (e.g. <code>MyFunction.svg</code>).</li>
             <li>SVG is resolution-independent and ideal for documents and high-quality printing.</li>
-        </ul>
+          </ul>
 
-        <h3>7. Themes</h3>
-        <ul>
+          <h3>7. Themes</h3>
+          <ul>
             <li>Open <strong>SETTINGS</strong> from the top-right toolbar.</li>
             <li>You can choose:
-                <ul>
-                    <li><strong>Classic</strong> – default colors & layout</li>
-                    <li><strong>Light</strong> – light UI suitable for bright environments</li>
-                    <li><strong>Dark</strong> – dark UI optimized for low-light work</li>
-                </ul>
+              <ul>
+                <li><strong>Classic</strong> – default colors & layout</li>
+                <li><strong>Light</strong> – light UI suitable for bright environments</li>
+                <li><strong>Dark</strong> – dark UI optimized for low-light work</li>
+              </ul>
             </li>
             <li>Your selection is saved in local storage and restored next time.</li>
-        </ul>
+          </ul>
 
-        <h3>8. Typical Workflow</h3>
-        <ol>
+          <h3>8. Typical Workflow</h3>
+          <ol>
             <li>Paste a function from your C project into the editor.</li>
             <li>Wait for automatic refresh or click “Regenerate Now”.</li>
             <li>Inspect the resulting flowchart.</li>
             <li>Click nodes to jump directly to code.</li>
             <li>Modify code to simplify logic or conditions.</li>
             <li>Download SVG for documentation or design reviews.</li>
-        </ol>
+          </ol>
 
-        <h3>9. Example Code Snippet</h3>
-        <pre style="background:#111827; color:#e5e7eb; padding:8px; border-radius:4px; font-size:12px; overflow:auto;">
+          <h3>9. Example Code Snippet</h3>
+          <pre style="background:#111827; color:#e5e7eb; padding:8px; border-radius:4px; font-size:12px; overflow:auto;">
         void main(void)
         {
             int x = 0;
@@ -771,53 +772,104 @@ const HELP_TEXT_HTML = `
                 x--;
             }
         }
-        </pre>
-        <p>
+          </pre>
+          <p>
             Paste this sample into the editor and observe how mAutoFlow renders the branches.
             Try modifying conditions or adding loops to see dynamic updates.
-        </p>
+          </p>
 
-        <h3>10. Notes & Limitations</h3>
-        <ul>
+          <h3>10. Notes &amp; Limitations</h3>
+          <ul>
             <li>mAutoFlow focuses on <strong>control flow</strong>, not a full C compiler.</li>
             <li>Complicated macros or vendor-specific extensions may not be shown perfectly.</li>
             <li>If a function body cannot be detected, mAutoFlow displays an error message.</li>
             <li>Extremely long single-line statements may reduce matching accuracy.</li>
-        </ul>
+          </ul>
 
-        <h3>11. Branch Shape Options</h3>
-        <p>
+          <h3>11. Branch Shape Options</h3>
+          <p>
             mAutoFlow allows customizing how <strong>conditional branches</strong> (<code>if / else-if / switch</code>)
             are displayed in the flowchart.
-        </p>
-
-        <ul>
+          </p>
+          <ul>
             <li>Open <strong>SETTINGS → Branch Shape</strong></li>
             <li>Choose between:
-                <ul>
-                    <li><strong>Rounded Rectangle</strong> – default (traditional flowchart style)</li>
-                    <li><strong>Diamond</strong> – classic decision symbol</li>
-                </ul>
+              <ul>
+                <li><strong>Rounded Rectangle</strong> – default (traditional flowchart style)</li>
+                <li><strong>Diamond</strong> – classic decision symbol</li>
+              </ul>
             </li>
             <li>The next time you regenerate the diagram, the new shape will be applied.</li>
-        </ul>
-
-        <p style="margin-top:16px; font-size:12px; opacity:0.8;">
+          </ul>
+          <p style="margin-top:16px; font-size:12px; opacity:0.8;">
             Tip: choose Rounded for compact readability, or Diamond for classic flowchart notation.
-        </p>
+          </p>
 
-        <h3>Contact &amp; Feedback</h3>
-        <p>
+          <h3>12. Sharing (Public Link)</h3>
+          <ul>
+            <li><strong>Create a share link (login required)</strong>:
+              <ul>
+                <li>Generate a flowchart first.</li>
+                <li>Click <strong>SHARE</strong> → a public URL is generated.</li>
+                <li>Copy the link and send it to others.</li>
+              </ul>
+            </li>
+            <li><strong>Open a shared link (no login required)</strong>:
+              <ul>
+                <li>Anyone with the link can open <code>/share/&lt;share_id&gt;</code>.</li>
+                <li>The shared page is <strong>view-only</strong> (diagram only).</li>
+              </ul>
+            </li>
+            <li><strong>Expiration</strong>:
+              <ul>
+                <li>Shared links expire by default (e.g., 7 days).</li>
+                <li>If a share is expired or removed, the page will show: <strong>“Expired or removed”</strong>.</li>
+              </ul>
+            </li>
+          </ul>
+
+          <h3>13. Login, Plans &amp; Usage Limits</h3>
+          <ul>
+            <li>mAutoFlow uses Google login (Supabase) for authentication.</li>
+            <li>Some features require login (for example: Share link creation, server-side limits).</li>
+            <li>
+              Limits may apply depending on your plan:
+              <ul>
+                <li><strong>Free</strong>: limited number of diagrams per day + node limit per diagram</li>
+                <li><strong>Pro / Expert</strong>: higher node limits or unlimited diagrams</li>
+              </ul>
+            </li>
+            <li>The UI shows your current plan and today’s usage in the top area after login.</li>
+          </ul>
+
+          <h3>14. Troubleshooting</h3>
+          <ul>
+            <li><strong>“Unexpected error” even when Network shows 200</strong>:
+              <ul>
+                <li>This is usually a <em>response parsing</em> issue or a <em>Mermaid rendering</em> exception.</li>
+                <li>Try regenerating once, or simplify the function temporarily.</li>
+              </ul>
+            </li>
+            <li><strong>Share link loads but shows an error</strong>:
+              <ul>
+                <li>If HTTP 404: the share is expired or removed.</li>
+                <li>If HTTP 500: contact support with the share_id and timestamp.</li>
+              </ul>
+            </li>
+          </ul>
+
+          <h3>Contact &amp; Feedback</h3>
+          <p>
             If you find a bug, have a feature request, or need help using mAutoFlow,
             feel free to contact us:
             <br />
             <strong>Email:</strong>
-            <a href="mailto:mautoflow.lab@gmail.com"
-               class="help-link">
-               mautoflow.lab@gmail.com
+            <a href="mailto:mautoflow.lab@gmail.com" class="help-link">
+              mautoflow.lab@gmail.com
             </a>
-        </p>
+          </p>
         `;
+	
    
         let isHelpMode = false;
         let isSettingsMode = false;   // SETTINGS가 좌측에 뜨는 상태           
