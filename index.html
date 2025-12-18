@@ -1344,9 +1344,9 @@ const HELP_TEXT_HTML = `
           try { applyDiagramZoom(); } catch(e) {}
           try { setTimeout(attachNodeClickHandlers, 50); } catch(e) {}
 
-          // ✅ (추가) 공유 페이지는 초기 100% 대신 화면맞춤
+          // ✅ 공유 페이지는 무조건 100%로 시작(자동맞춤 X)
           setTimeout(() => {
-            try { fitDiagramToScreen(24); } catch(_) {}
+            try { zoomReset(); } catch(_) {}
           }, 80);
         }
 
