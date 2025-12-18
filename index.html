@@ -1401,10 +1401,15 @@ const HELP_TEXT_HTML = `
 
         async function loadSharedDiagram(shareId) {
           try {
-            // ✅ (중요) 요구사항: 비로그인도 열람 가능
-            //  - 백엔드를 "토큰 없어도 조회 가능"으로 바꿔야 함 (아래 app.py 수정 참고)
             const res = await fetch(`${API_BASE}/api/share/${shareId}`);
+
             if (!res.ok) {
+              // ✅ 만료/삭제/없음은 404로 통일 → 문구도 통일
+              if (res.status === 404) {
+                setStatus("error", "Expired or removed");
+                return;
+              }
+
               const txt = await res.text().catch(() => "");
               setStatus("error", `Share load failed (HTTP ${res.status}) ${txt}`);
               return;
@@ -1417,10 +1422,8 @@ const HELP_TEXT_HTML = `
               return;
             }
 
-            // 전역에도 저장 (다운로드/재공유 등에 활용 가능)
             window.__lastMermaidCode = mermaidCode;
 
-            // UX: 공유 페이지에서는 좌측 코드 입력을 읽기 전용 처리(원하면 지워도 됨)
             const src = document.getElementById("src");
             if (src) {
               src.value = "/* Shared diagram (read-only) */";
