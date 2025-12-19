@@ -726,28 +726,7 @@ const HELP_TEXT_HTML = `
             <li>The current zoom level is shown on the right side of the toolbar.</li>
           </ul>
 
-          <h3>6. Downloading the Diagram</h3>
-          <ul>
-            <li>Click the <strong>DOWNLOAD</strong> button in the top-right toolbar.</li>
-            <li>The current flowchart is exported as an <strong>SVG</strong> file.</li>
-            <li>File name is based on the current function name (e.g. <code>MyFunction.svg</code>).</li>
-            <li>SVG is resolution-independent and ideal for documents and high-quality printing.</li>
-          </ul>
-
-          <h3>7. Themes</h3>
-          <ul>
-            <li>Open <strong>SETTINGS</strong> from the top-right toolbar.</li>
-            <li>You can choose:
-              <ul>
-                <li><strong>Classic</strong> – default colors & layout</li>
-                <li><strong>Light</strong> – light UI suitable for bright environments</li>
-                <li><strong>Dark</strong> – dark UI optimized for low-light work</li>
-              </ul>
-            </li>
-            <li>Your selection is saved in local storage and restored next time.</li>
-          </ul>
-
-          <h3>8. Typical Workflow</h3>
+          <h3>6. Typical Workflow</h3>
           <ol>
             <li>Paste a function from your C project into the editor.</li>
             <li>Wait for automatic refresh or click “Regenerate Now”.</li>
@@ -757,7 +736,7 @@ const HELP_TEXT_HTML = `
             <li>Download SVG for documentation or design reviews.</li>
           </ol>
 
-          <h3>9. Example Code Snippet</h3>
+          <h3>7. Example Code Snippet</h3>
           <pre style="background:#111827; color:#e5e7eb; padding:8px; border-radius:4px; font-size:12px; overflow:auto;">
         void main(void)
         {
@@ -778,7 +757,7 @@ const HELP_TEXT_HTML = `
             Try modifying conditions or adding loops to see dynamic updates.
           </p>
 
-          <h3>10. Notes &amp; Limitations</h3>
+          <h3>8. Notes &amp; Limitations</h3>
           <ul>
             <li>mAutoFlow focuses on <strong>control flow</strong>, not a full C compiler.</li>
             <li>Complicated macros or vendor-specific extensions may not be shown perfectly.</li>
@@ -786,26 +765,34 @@ const HELP_TEXT_HTML = `
             <li>Extremely long single-line statements may reduce matching accuracy.</li>
           </ul>
 
-          <h3>11. Branch Shape Options</h3>
-          <p>
-            mAutoFlow allows customizing how <strong>conditional branches</strong> (<code>if / else-if / switch</code>)
-            are displayed in the flowchart.
-          </p>
-          <ul>
-            <li>Open <strong>SETTINGS → Branch Shape</strong></li>
-            <li>Choose between:
-              <ul>
-                <li><strong>Rounded Rectangle</strong> – default (traditional flowchart style)</li>
-                <li><strong>Diamond</strong> – classic decision symbol</li>
-              </ul>
-            </li>
-            <li>The next time you regenerate the diagram, the new shape will be applied.</li>
-          </ul>
-          <p style="margin-top:16px; font-size:12px; opacity:0.8;">
-            Tip: choose Rounded for compact readability, or Diamond for classic flowchart notation.
-          </p>
 
-          <h3>12. Sharing (Public Link)</h3>
+		  <h3>9. Upgrade</h3>
+
+		  <p>
+		    Some advanced features in mAutoFlow are available only on paid plans.
+		    When you attempt to use such a feature, an <strong>UPGRADE</strong> button
+		    may appear in the UI.
+		  </p>
+
+		  <ul>
+		    <li>
+		      Upgrading requires login so that your plan can be linked to your account.
+		    </li>
+		    <li>
+		      Typical features that may trigger an upgrade prompt include:
+		      <ul>
+		        <li>Macro analysis using <strong>Defined</strong> mode</li>
+		        <li>Higher node limits for large functions</li>
+		      </ul>
+		    </li>
+		    <li>
+		      After upgrading, your plan status is automatically refreshed.
+		      In some cases, a page reload or re-login may be required.
+		    </li>
+		  </ul>
+
+
+          <h3>10. Sharing (Public Link)</h3>
           <ul>
             <li><strong>Create a share link (login required)</strong>:
               <ul>
@@ -818,15 +805,114 @@ const HELP_TEXT_HTML = `
               <ul>
                 <li>Anyone with the link can open <code>/share/&lt;share_id&gt;</code>.</li>
                 <li>The shared page is <strong>view-only</strong> (diagram only).</li>
+                <li>
+				  Downloading is disabled on shared pages.
+				  Only the original owner can download diagrams.
+				</li>
               </ul>
             </li>
             <li><strong>Expiration</strong>:
               <ul>
-                <li>Shared links expire by default (e.g., 7 days).</li>
+                <li>There is no limit on the total number of shares, but each link expires automatically after 7 days.</li>
+                <li>Can create up to 20 share links per day(based on server time: UTC, resets around 09:00 AM KST).</li>
                 <li>If a share is expired or removed, the page will show: <strong>“Expired or removed”</strong>.</li>
+                <li>A share link may be removed before expiration by its creator (owner) only.</li>
               </ul>
             </li>
           </ul>
+
+          <h3>11. Downloading the Diagram</h3>
+          <ul>
+            <li>Click the <strong>DOWNLOAD</strong> button in the top-right toolbar.</li>
+            <li>The current flowchart is exported as an <strong>SVG</strong> file.</li>
+            <li>File name is based on the current function name (e.g. <code>MyFunction.svg</code>).</li>
+            <li>SVG is resolution-independent and ideal for documents and high-quality printing.</li>
+            <li>If you need PNG or PDF, you can convert the SVG using external tools or your browser’s print-to-PDF feature.</li>
+          </ul>
+
+		  <h3>12. Settings</h3>
+
+		  <p>
+		    The <strong>SETTINGS</strong> panel allows you to customize how the flowchart is generated
+		    and displayed. When SETTINGS is open, the main editor is temporarily hidden.
+		  </p>
+
+		  <p>
+		    To return to the code editor at any time, click the <strong>CODE</strong> button
+		    in the top-right toolbar.
+		    (The same CODE button is used to exit both <strong>HELP</strong> and <strong>SETTINGS</strong>.)
+		  </p>
+
+		  <h4>12.1 Display Options</h4>
+		  <ul>
+		    <li>
+		      <strong>Theme</strong><br/>
+		      Controls the overall visual appearance of the diagram and UI.
+		      Available themes include Classic, Light, and Dark.
+		      Your selection is saved locally and restored automatically.
+		    </li>
+		    <li>
+		      <strong>Branch Shape</strong><br/>
+		      Controls how conditional branches (<code>if</code>, <code>else</code>, <code>switch</code>)
+		      are drawn in the flowchart.
+		      You can choose between rounded rectangles and diamond-style decision nodes.
+		      The diagram is regenerated when this option changes.
+		    </li>
+		    <li>
+		      <strong>Function Name Display</strong><br/>
+		      Controls how function names are shown in the diagram.
+		      <ul>
+		        <li><strong>Short</strong>: compact function names for readability</li>
+		        <li><strong>Full</strong>: full function signature for detailed documentation</li>
+		      </ul>
+		      Changing this option regenerates the diagram.
+		    </li>
+		  </ul>
+
+		  <h4>12.2 Macro Options</h4>
+		  <ul>
+		    <li>
+		      <strong>Preprocessor Macros (-D)</strong><br/>
+		      Allows you to control how conditional compilation paths are analyzed.
+		    </li>
+		    <li>
+		      Macros should be entered using the following format:
+		      <br/>
+		      <code>DEBUG;TEST=2;FEATURE_X</code>
+		    </li>
+		    <li>
+		      Use semicolons (<code>;</code>) to separate macros.
+		      Use equals (<code>=</code>) to assign values.
+		    </li>
+		    <li>
+		      <strong>All</strong>: analyze the code without applying custom macro definitions.
+		    </li>
+		    <li>
+		      <strong>Defined</strong>: analyze the code using the specified macro definitions.
+		      This option affects which branches appear in the flowchart.
+		    </li>
+		    <li>
+		      <strong>Note:</strong> The <em>Defined</em> macro mode is available only for
+		      <strong>Pro</strong> and <strong>Expert</strong> plans.
+		      Free users will see an upgrade prompt when attempting to use it.
+		    </li>
+		  </ul>
+
+		  <h4>12.3 Download Options</h4>
+		  <ul>
+		    <li>
+		      <strong>Format</strong><br/>
+		      Currently, diagrams can be downloaded as <strong>SVG</strong>.
+		    </li>
+		    <li>
+		      SVG files are vector-based and suitable for documentation, presentations,
+		      and high-resolution printing.
+		    </li>
+		    <li>
+		      If you need PNG or PDF, you can convert the SVG using external tools
+		      or your browser’s print-to-PDF feature.
+		    </li>
+		  </ul>
 
           <h3>13. Login, Plans &amp; Usage Limits</h3>
           <ul>
