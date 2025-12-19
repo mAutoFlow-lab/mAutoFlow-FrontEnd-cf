@@ -2020,8 +2020,11 @@ const HELP_TEXT_HTML = `
           // 3) UPGRADE 버튼 블링크
           const ub = document.getElementById("upgradeButton");
           if (ub) {
-            ub.style.display = "inline-flex";
-            ub.classList.add("upgrade-blink");
+            const tier = window.__planTier || (window.__isProUser ? "pro" : "free");
+            const shouldShow = (tier === "free") && !window.__isTestAccount;
+
+            ub.style.display = shouldShow ? "inline-flex" : "none";
+            if (shouldShow) ub.classList.add("upgrade-blink");
           }
         }
                 
@@ -2742,11 +2745,11 @@ const HELP_TEXT_HTML = `
                 if (upgradeBtn) {
                     // Expert 플랜 또는 테스트 계정(exitgiveme)만 UPGRADE 숨김
                     const tier = window.__planTier || (window.__isProUser ? "pro" : "free");
-                    const shouldHide =
-                        (tier === "expert") || window.__isTestAccount;
 
-                    upgradeBtn.style.display = shouldHide ? "none" : "inline-flex";
-                    // 정상 응답에서는 항상 깜빡임 초기화 (에러에서만 다시 켬)
+                    // ✅ Free에서만 보여주기
+                    const shouldShow = (tier === "free") && !window.__isTestAccount;
+
+                    upgradeBtn.style.display = shouldShow ? "inline-flex" : "none";
                     upgradeBtn.classList.remove("upgrade-blink");
                 }
 
@@ -2828,12 +2831,11 @@ const HELP_TEXT_HTML = `
                         // - Free : Pro로 업그레이드 유도
                         // - Pro  : Expert로 업그레이드 유도
                         const ub = document.getElementById("upgradeButton");
-                        if (ub && !window.__isTestAccount && tier !== "expert") {
-                            // 혹시 숨겨져 있었다면 다시 보이도록
-                            ub.style.display = "inline-flex";
-                            ub.classList.add("upgrade-blink");
+                        if (ub) {
+                          const shouldShow = (tier === "free") && !window.__isTestAccount;
+                          ub.style.display = shouldShow ? "inline-flex" : "none";
+                          if (shouldShow) ub.classList.add("upgrade-blink");
                         }
-
 
                         return;
                     }
@@ -3612,11 +3614,10 @@ void main(void)
 
                 const isTestUser = (user.email === window.TEST_EMAIL);
 
-                // UPGRADE 버튼: 테스트 계정은 숨기고, 나머지는 일단 표시
+                // UPGRADE 버튼: 로그인 직후엔 플랜 확정 전이므로 일단 숨김
                 if (upgradeBtn) {
-                    // 로그인할 때는 일단 깜빡임 제거
-                    upgradeBtn.classList.remove("upgrade-blink");
-                    upgradeBtn.style.display = isTestUser ? "none" : "inline-flex";
+                  upgradeBtn.classList.remove("upgrade-blink");
+                  upgradeBtn.style.display = "none";
                 }
 
                 // 🔹 로그인 직후: 플랜 상태 리셋 + 로딩 시작
