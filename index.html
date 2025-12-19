@@ -554,7 +554,15 @@
         const EXPERT_CHECKOUT_URL =
           "https://mautoflow-lab.lemonsqueezy.com/buy/EXPERT_SLUG_HERE";
 
+        const PAYMENT_ENABLED = false;  // ← Live 전환 시 true
+
         function openProCheckout() {
+
+          if (!PAYMENT_ENABLED) {
+            alert("Payments are currently being enabled.\nUpgrade will be available soon.");
+            return;
+          }  
+            
           // Supabase 로그인 유저 정보가 있어야 user_id를 넘길 수 있음
           const user = window.currentUser;
 
