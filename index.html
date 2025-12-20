@@ -1657,6 +1657,96 @@ const HELP_TEXT_HTML = `
             setTimeout(() => URL.revokeObjectURL(url), 1000);
         }
 
+
+        // PNG 다운로드 (프론트에서 SVG -> Canvas 변환)
+        async function downloadAsPNG() {
+          const svg = document.querySelector("#chartInner svg");
+          if (!svg) {
+            alert("There is no flowchart to download yet.");
+            return;
+          }
+
+          // 1) SVG 복제 + xmlns 보장
+          const cloned = svg.cloneNode(true);
+          cloned.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+
+          // 2) 크기 계산 (Mermaid SVG는 viewBox가 있거나 bbox로 계산 가능)
+          //    - width/height가 비어 있으면 캔버스 크기가 0이 되는 케이스 방지
+          const vb = cloned.viewBox && cloned.viewBox.baseVal ? cloned.viewBox.baseVal : null;
+
+          let width = 0, height = 0;
+          if (vb && vb.width && vb.height) {
+            width = vb.width;
+            height = vb.height;
+          } else {
+            // getBBox는 원본 svg에서만 안정적인 경우가 있어 원본 기준으로 계산
+            const bbox = svg.getBBox();
+            width = Math.ceil(bbox.width);
+            height = Math.ceil(bbox.height);
+          }
+
+          if (!width || !height) {
+            alert("Failed to determine SVG size for PNG export.");
+            return;
+          }
+
+          // 3) SVG 문자열화
+          const serializer = new XMLSerializer();
+          const source = serializer.serializeToString(cloned);
+
+          // 4) Blob URL -> Image 로드 -> Canvas draw
+          const svgBlob = new Blob([source], { type: "image/svg+xml;charset=utf-8" });
+          const url = URL.createObjectURL(svgBlob);
+
+          try {
+            const img = new Image();
+            // 외부 리소스(폰트/이미지)가 생길 가능성 대비
+            img.crossOrigin = "anonymous";
+
+            await new Promise((resolve, reject) => {
+              img.onload = () => resolve();
+              img.onerror = (e) => reject(e);
+              img.src = url;
+            });
+
+            const dpr = window.devicePixelRatio || 1;
+
+            const canvas = document.createElement("canvas");
+            canvas.width = Math.round(width * dpr);
+            canvas.height = Math.round(height * dpr);
+
+            const ctx = canvas.getContext("2d");
+            if (!ctx) {
+              alert("Canvas is not supported in this browser.");
+              return;
+            }
+
+            // 배경 흰색(원하면 투명으로 제거 가능)
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, width, height);
+
+            ctx.drawImage(img, 0, 0, width, height);
+
+            // 5) PNG 저장
+            const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+            if (!blob) {
+              alert("Failed to create PNG blob.");
+              return;
+            }
+
+            const pngUrl = URL.createObjectURL(blob);
+            triggerDownload(pngUrl, getCurrentFilename("png"));
+            setTimeout(() => URL.revokeObjectURL(pngUrl), 2000);
+          } catch (e) {
+            console.error(e);
+            alert("PNG export failed. (SVG->Canvas render error)");
+          } finally {
+            URL.revokeObjectURL(url);
+          }
+        }
+            
+
         async function downloadFromServer(format) {
           // format: "png" | "pdf"
           if (!window.currentUser) {
@@ -1736,8 +1826,7 @@ const HELP_TEXT_HTML = `
         // 다운로드 타입에 따라 분기
         async function downloadDiagram() {
           if (downloadFormat === "png") {
-            // ✅ 서버에서 PNG 렌더링 받아서 다운로드
-            await downloadFromServer("png");
+            await downloadAsPNG();   // ✅ 프론트 변환
           } else {
             downloadAsSVG();
           }
