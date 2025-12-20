@@ -579,7 +579,19 @@
           window.location.href = url;
         }
 
-	mermaid.initialize({ startOnLoad: false });
+	// mermaid.initialize({ startOnLoad: false });
+        mermaid.initialize({
+          startOnLoad: false,
+          securityLevel: "loose",
+          flowchart: {
+            htmlLabels: false,     // ★ 이게 핵심
+            useMaxWidth: true
+          },
+          themeVariables: {
+            fontFamily: "Arial, sans-serif"  // Office 호환 폰트 추천
+          }
+        });
+
 
 	// 전역 선언 (어디서든 접근 가능)
         let funcNameStyle = "short";
