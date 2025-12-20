@@ -1735,7 +1735,12 @@ const HELP_TEXT_HTML = `
 
         // 다운로드 타입에 따라 분기
         async function downloadDiagram() {
-          downloadAsSVG(); // SVG only
+          if (downloadFormat === "png") {
+            // ✅ 서버에서 PNG 렌더링 받아서 다운로드
+            await downloadFromServer("png");
+          } else {
+            downloadAsSVG();
+          }
         }
         
         let typingTimer = null;
@@ -3129,17 +3134,21 @@ const HELP_TEXT_HTML = `
 
             applyMacroUIState();
 
-            // ----- Download Options (SVG only) -----
-            downloadFormat = "svg";
-            try { localStorage.setItem("autoflow-download-format", "svg"); } catch(e) {}
+            // ----- Download Options (SVG/PNG) -----
+            try {
+              const savedFmt = localStorage.getItem("autoflow-download-format");
+              downloadFormat = (savedFmt === "png") ? "png" : "svg";
+            } catch (e) {
+              downloadFormat = "svg";
+            }
 
             const dlRadios = scope.querySelectorAll('input[name="downloadFormat"]');
             dlRadios.forEach(r => {
-              r.checked = (r.value === "svg");
-              r.addEventListener("change", (e) => {
-                // 혹시라도 DOM에 다른 옵션이 남아있어도 svg로 고정
-                downloadFormat = "svg";
-                try { localStorage.setItem("autoflow-download-format", "svg"); } catch(e2) {}
+              r.checked = (r.value === downloadFormat);
+
+              r.addEventListener("change", () => {
+                downloadFormat = (r.value === "png") ? "png" : "svg";
+                try { localStorage.setItem("autoflow-download-format", downloadFormat); } catch(e2) {}
               });
             });
         }
@@ -3552,6 +3561,13 @@ void main(void)
                   <input type="radio" name="downloadFormat" value="svg" checked />
                   SVG (recommended)
                 </label>
+
+                <!-- PNG 추가 -->
+                <label style="margin-left:14px;">
+                  <input type="radio" name="downloadFormat" value="png" />
+                  PNG
+                </label>
+                
                 <div style="font-size:12px; opacity:0.8; margin-top:6px;">
                   Tip: For PDF, use Print → Save as PDF. For PNG, export via Inkscape/Figma.
                 </div>
