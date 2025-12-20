@@ -3240,6 +3240,47 @@ const HELP_TEXT_HTML = `
                 try { localStorage.setItem("autoflow-download-format", downloadFormat); } catch(e2) {}
               });
             });
+
+            // ----- PNG Options (Scale / Background / Padding) -----
+            const pngScaleEl   = scope.querySelector("#pngScale");
+            const pngBgEl      = scope.querySelector("#pngBg");
+            const pngPaddingEl = scope.querySelector("#pngPadding");
+
+            // 복원
+            if (pngScaleEl) {
+              pngScaleEl.value = localStorage.getItem("autoflow-png-scale") || "2";
+            }
+            if (pngBgEl) {
+              pngBgEl.value = localStorage.getItem("autoflow-png-bg") || "white";
+            }
+            if (pngPaddingEl) {
+              pngPaddingEl.value = localStorage.getItem("autoflow-png-padding") || "20";
+            }
+
+            // 변경 시 저장
+            if (pngScaleEl) {
+              pngScaleEl.addEventListener("change", () => {
+                try {
+                  localStorage.setItem("autoflow-png-scale", pngScaleEl.value);
+                } catch (e) {}
+              });
+            }
+
+            if (pngBgEl) {
+              pngBgEl.addEventListener("change", () => {
+                try {
+                  localStorage.setItem("autoflow-png-bg", pngBgEl.value);
+                } catch (e) {}
+              });
+            }
+
+            if (pngPaddingEl) {
+              pngPaddingEl.addEventListener("change", () => {
+                try {
+                  localStorage.setItem("autoflow-png-padding", pngPaddingEl.value);
+                } catch (e) {}
+              });
+            }
         }
 
         document.addEventListener("DOMContentLoaded", async function() {
@@ -3658,10 +3699,46 @@ void main(void)
                 </label>
                 
                 <div style="font-size:12px; opacity:0.8; margin-top:6px;">
-                  Tip: For PDF, use Print → Save as PDF. For PNG, export via Inkscape/Figma.
+                  Tip: For PDF, use Print → Save as PDF.
                 </div>
               </div>
             </div>
+
+            <div class="modal-section">
+              <div class="modal-section-title">PNG Options</div>
+
+              <div class="modal-radio-row">
+                <label>
+                  Scale:
+                  <select id="pngScale" style="margin-left:8px;">
+                    <option value="1">1x (Fast)</option>
+                    <option value="2" selected>2x (Recommended)</option>
+                    <option value="3">3x (High)</option>
+                  </select>
+                </label>
+
+                <label>
+                  Background:
+                  <select id="pngBg" style="margin-left:8px;">
+                    <option value="white" selected>White</option>
+                    <option value="transparent">Transparent</option>
+                  </select>
+                </label>
+
+                <label>
+                  Padding (px):
+                  <input
+                    id="pngPadding"
+                    type="number"
+                    min="0"
+                    max="200"
+                    step="5"
+                    value="20"
+                    style="width:80px; margin-left:8px;"
+                  />
+                </label>
+              </div>
+            </div>    
         </div>
     </div>
 
