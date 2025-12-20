@@ -1669,17 +1669,14 @@ const HELP_TEXT_HTML = `
           // ✅ Settings에서 저장한 PNG 옵션 읽기
           let scale = 2;
           let bg = "white";
-          let padding = 20;
 
           try {
             scale = parseFloat(localStorage.getItem("autoflow-png-scale") || "2");
             bg = localStorage.getItem("autoflow-png-bg") || "white";
-            padding = parseInt(localStorage.getItem("autoflow-png-padding") || "20", 10);
           } catch (e) {}
 
           // 방어
           if (!Number.isFinite(scale) || scale <= 0) scale = 2;
-          if (!Number.isFinite(padding) || padding < 0) padding = 20;
           if (bg !== "transparent") bg = "white";
 
           // 1) SVG 복제 + xmlns 보장
@@ -1704,10 +1701,6 @@ const HELP_TEXT_HTML = `
             return;
           }
 
-          // ✅ padding 반영한 최종 출력 크기
-          const outW = width + padding * 2;
-          const outH = height + padding * 2;
-
           // 3) SVG 문자열화
           const serializer = new XMLSerializer();
           const source = serializer.serializeToString(cloned);
@@ -1729,8 +1722,8 @@ const HELP_TEXT_HTML = `
             const dpr = window.devicePixelRatio || 1;
 
             const canvas = document.createElement("canvas");
-            canvas.width = Math.round(outW * dpr * scale);
-            canvas.height = Math.round(outH * dpr * scale);
+            canvas.width = Math.round(width * dpr * scale);
+            canvas.height = Math.round(height * dpr * scale);
 
             const ctx = canvas.getContext("2d");
             if (!ctx) {
@@ -1744,11 +1737,11 @@ const HELP_TEXT_HTML = `
             // ✅ 배경 (white / transparent)
             if (bg === "white") {
               ctx.fillStyle = "#ffffff";
-              ctx.fillRect(0, 0, outW, outH);
+              ctx.fillRect(0, 0, width, height);
             }
 
             // ✅ padding 만큼 offset
-            ctx.drawImage(img, padding, padding, width, height);
+            ctx.drawImage(img, 0, 0, width, height);
 
             // 5) PNG 저장
             const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
@@ -3265,43 +3258,6 @@ const HELP_TEXT_HTML = `
             // ----- PNG Options (Scale / Background / Padding) -----
             const pngScaleEl   = scope.querySelector("#pngScale");
             const pngBgEl      = scope.querySelector("#pngBg");
-            const pngPaddingEl = scope.querySelector("#pngPadding");
-
-            // 복원
-            if (pngScaleEl) {
-              pngScaleEl.value = localStorage.getItem("autoflow-png-scale") || "2";
-            }
-            if (pngBgEl) {
-              pngBgEl.value = localStorage.getItem("autoflow-png-bg") || "white";
-            }
-            if (pngPaddingEl) {
-              pngPaddingEl.value = localStorage.getItem("autoflow-png-padding") || "20";
-            }
-
-            // 변경 시 저장
-            if (pngScaleEl) {
-              pngScaleEl.addEventListener("change", () => {
-                try {
-                  localStorage.setItem("autoflow-png-scale", pngScaleEl.value);
-                } catch (e) {}
-              });
-            }
-
-            if (pngBgEl) {
-              pngBgEl.addEventListener("change", () => {
-                try {
-                  localStorage.setItem("autoflow-png-bg", pngBgEl.value);
-                } catch (e) {}
-              });
-            }
-
-            if (pngPaddingEl) {
-              pngPaddingEl.addEventListener("change", () => {
-                try {
-                  localStorage.setItem("autoflow-png-padding", pngPaddingEl.value);
-                } catch (e) {}
-              });
-            }
         }
 
         document.addEventListener("DOMContentLoaded", async function() {
@@ -3744,19 +3700,6 @@ void main(void)
                     <option value="white" selected>White</option>
                     <option value="transparent">Transparent</option>
                   </select>
-                </label>
-
-                <label>
-                  Padding (px):
-                  <input
-                    id="pngPadding"
-                    type="number"
-                    min="0"
-                    max="200"
-                    step="5"
-                    value="20"
-                    style="width:80px; margin-left:8px;"
-                  />
                 </label>
               </div>
             </div>    
