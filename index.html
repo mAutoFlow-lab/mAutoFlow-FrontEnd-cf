@@ -1639,6 +1639,11 @@ const HELP_TEXT_HTML = `
             const data = await res.json();
             let mermaidCode = (data.mermaid_code || "").trim();
             mermaidCode = decodeHtmlEntitiesDeep(mermaidCode, 3);
+
+            // 👇 Mermaid 문법 깨질 경우 대비(선택)
+            if (mermaidCode.includes("&amp;")) {
+               console.warn("⚠️ Mermaid code still contains &amp; after decode");
+            }
             
             if (!mermaidCode) {
               setStatus("error", "Shared diagram is empty.");
@@ -2932,6 +2937,10 @@ const HELP_TEXT_HTML = `
                 let mermaidCode = data.mermaid || "";
                 // ✅ 백엔드/중간 경로에서 escape가 2중으로 된 경우(&amp;amp;)까지 풀어줌
                 mermaidCode = decodeHtmlEntitiesDeep(mermaidCode, 3);
+                if (mermaidCode.includes("&amp;")) {
+                  console.warn("⚠️ Mermaid code still contains &amp; after decode");
+                }
+                                
 
                 window.__lastMermaidCode = mermaidCode;   // (Share에서 사용)
                 window.__lastShareId = null; // 새로 생성되면 갱신
