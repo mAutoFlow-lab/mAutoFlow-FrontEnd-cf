@@ -579,17 +579,32 @@
           window.location.href = url;
         }
 
+        function getMaxEdgesByPlan() {
+          // TODO: 나중에 실제 플랜 변수로 교체
+          const plan = window.currentUserPlan || "free"; 
+          // 예상 값: "free" | "pro" | "expert"
+
+          switch (plan) {
+            case "expert":
+              return 20000;   // 노드 1000 대응
+            case "pro":
+              return 8000;
+            case "free":
+            default:
+              return 2000;
+          }
+        }
+
+
 	// mermaid.initialize({ startOnLoad: false });
         mermaid.initialize({
           startOnLoad: false,
           maxTextSize: 2000000,
+          maxEdges: getMaxEdgesByPlan(),   // ✅ 플랜 기반
           securityLevel: "loose",
           flowchart: {
-            htmlLabels: false,     // ★ 이게 핵심
+            htmlLabels: false,
             useMaxWidth: true
-          },
-          themeVariables: {
-            fontFamily: "Arial, sans-serif"  // Office 호환 폰트 추천
           }
         });
 
