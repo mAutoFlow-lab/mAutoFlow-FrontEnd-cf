@@ -1704,6 +1704,7 @@ const HELP_TEXT_HTML = `
           try {
             scale = parseFloat(localStorage.getItem("autoflow-png-scale") || "2");
             bg = localStorage.getItem("autoflow-png-bg") || "white";
+            bg = String(bg || "white").toLowerCase().trim();
           } catch (e) {}
 
           // 방어
@@ -3351,9 +3352,43 @@ const HELP_TEXT_HTML = `
               });
             });
 
-            // ----- PNG Options (Scale / Background / Padding) -----
+            // ----- PNG Options (Scale / Background) -----
             const pngScaleEl   = scope.querySelector("#pngScale");
             const pngBgEl      = scope.querySelector("#pngBg");
+
+            // ✅ 저장값 복원
+            if (pngScaleEl) {
+              let savedScale = "2";
+              try { savedScale = localStorage.getItem("autoflow-png-scale") || "2"; } catch (e) {}
+              pngScaleEl.value = String(parseFloat(savedScale) || 2);
+
+              // ✅ 중복 바인딩 방지
+              if (!pngScaleEl.__autoflowBound) {
+                pngScaleEl.__autoflowBound = true;
+                pngScaleEl.addEventListener("change", () => {
+                  const v = parseFloat(pngScaleEl.value || "2");
+                  const safe = (Number.isFinite(v) && v > 0) ? v : 2;
+                  try { localStorage.setItem("autoflow-png-scale", String(safe)); } catch (e) {}
+                });
+              }
+            }
+
+            if (pngBgEl) {
+              let savedBg = "white";
+              try { savedBg = localStorage.getItem("autoflow-png-bg") || "white"; } catch (e) {}
+              savedBg = String(savedBg || "white").toLowerCase().trim();
+              pngBgEl.value = (savedBg === "transparent") ? "transparent" : "white";
+
+              // ✅ 중복 바인딩 방지
+              if (!pngBgEl.__autoflowBound) {
+                pngBgEl.__autoflowBound = true;
+                pngBgEl.addEventListener("change", () => {
+                  const v = String(pngBgEl.value || "white").toLowerCase().trim();
+                  const safe = (v === "transparent") ? "transparent" : "white";
+                  try { localStorage.setItem("autoflow-png-bg", safe); } catch (e) {}
+                });
+              }
+            }
         }
 
         document.addEventListener("DOMContentLoaded", async function() {
