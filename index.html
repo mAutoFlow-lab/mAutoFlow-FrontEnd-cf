@@ -1721,9 +1721,36 @@ const HELP_TEXT_HTML = `
 
             const dpr = window.devicePixelRatio || 1;
 
+            // Chrome/브라우저에서 안전한 캔버스 최대치 가드(경험상)
+            // (너무 크게 잡으면 여전히 메모리 터질 수 있음)
+            const MAX_DIM = 16384; // 한 변 최대
+            const MAX_PIXELS = 160_000_000; // 총 픽셀 수 제한(대략 160MP)
+
+            let effScale = scale;
+
+            // 1) 한 변 제한 기반 scale 축소
+            effScale = Math.min(
+              effScale,
+              MAX_DIM / (width * dpr),
+              MAX_DIM / (height * dpr)
+            );
+
+            // 2) 총 픽셀 제한 기반 scale 축소
+            const pixelsAtScale = (width * dpr * effScale) * (height * dpr * effScale);
+            if (pixelsAtScale > MAX_PIXELS) {
+              const shrink = Math.sqrt(MAX_PIXELS / pixelsAtScale);
+              effScale = effScale * shrink;
+            }
+
+            // 최소 0.1 미만이면 너무 작으니 중단(또는 1x로 강제)
+            if (effScale < 0.1) {
+              alert("Diagram is too large to export as PNG in this browser. Try lower scale or export as SVG.");
+              return;
+            }
+
             const canvas = document.createElement("canvas");
-            canvas.width = Math.round(width * dpr * scale);
-            canvas.height = Math.round(height * dpr * scale);
+            canvas.width = Math.max(1, Math.floor(width * dpr * effScale));
+            canvas.height = Math.max(1, Math.floor(height * dpr * effScale));
 
             const ctx = canvas.getContext("2d");
             if (!ctx) {
@@ -1732,7 +1759,7 @@ const HELP_TEXT_HTML = `
             }
 
             // ✅ dpr * scale 적용 (고해상도)
-            ctx.setTransform(dpr * scale, 0, 0, dpr * scale, 0, 0);
+            ctx.setTransform(dpr * effScale, 0, 0, dpr * effScale, 0, 0);
 
             // ✅ 배경 (white / transparent)
             if (bg === "white") {
@@ -1744,11 +1771,28 @@ const HELP_TEXT_HTML = `
             ctx.drawImage(img, 0, 0, width, height);
 
             // 5) PNG 저장
-            const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+            let blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+            if (!blob && effScale > 1) {
+              // 마지막 수단: 1x로 재시도
+              effScale = 1;
+              canvas.width = Math.max(1, Math.floor(width * dpr * effScale));
+              canvas.height = Math.max(1, Math.floor(height * dpr * effScale));
+              ctx.setTransform(dpr * effScale, 0, 0, dpr * effScale, 0, 0);
+
+              if (bg === "white") {
+                ctx.fillStyle = "#ffffff";
+                ctx.fillRect(0, 0, width, height);
+              }
+              ctx.drawImage(img, 0, 0, width, height);
+
+              blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+            }
+
             if (!blob) {
-              alert("Failed to create PNG blob.");
+              alert("Failed to create PNG blob. Try Scale 1x or download SVG.");
               return;
             }
+
 
             const pngUrl = URL.createObjectURL(blob);
             triggerDownload(pngUrl, getCurrentFilename("png"));
