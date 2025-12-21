@@ -1598,6 +1598,28 @@ const HELP_TEXT_HTML = `
         }
 
 
+        // ============================
+        //  HTML entity decode helpers
+        // ============================
+        function decodeHtmlEntitiesOnce(str) {
+          if (!str || typeof str !== "string") return str;
+          const textarea = document.createElement("textarea");
+          textarea.innerHTML = str;
+          return textarea.value;
+        }
+
+        // &amp;amp; 같은 "중복 escape"를 2~3번 풀어주는 용도
+        function decodeHtmlEntitiesDeep(str, maxIter = 3) {
+          let out = str;
+          for (let i = 0; i < maxIter; i++) {
+            const next = decodeHtmlEntitiesOnce(out);
+            if (next === out) break;
+            out = next;
+          }
+          return out;
+        }
+
+
         async function loadSharedDiagram(shareId) {
           try {
             const res = await fetch(`${API_BASE}/api/share/${shareId}`);
@@ -1615,7 +1637,9 @@ const HELP_TEXT_HTML = `
             }
 
             const data = await res.json();
-            const mermaidCode = (data.mermaid_code || "").trim();
+            let mermaidCode = (data.mermaid_code || "").trim();
+            mermaidCode = decodeHtmlEntitiesDeep(mermaidCode, 3);
+            
             if (!mermaidCode) {
               setStatus("error", "Shared diagram is empty.");
               return;
@@ -2905,7 +2929,9 @@ const HELP_TEXT_HTML = `
                 }
                 
                 const data = await res.json();
-                const mermaidCode   = data.mermaid || "";
+                let mermaidCode = data.mermaid || "";
+                // ✅ 백엔드/중간 경로에서 escape가 2중으로 된 경우(&amp;amp;)까지 풀어줌
+                mermaidCode = decodeHtmlEntitiesDeep(mermaidCode, 3);
 
                 window.__lastMermaidCode = mermaidCode;   // (Share에서 사용)
                 window.__lastShareId = null; // 새로 생성되면 갱신
