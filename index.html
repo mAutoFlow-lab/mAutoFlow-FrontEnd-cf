@@ -1502,7 +1502,7 @@ const HELP_TEXT_HTML = `
           return m ? m[1] : null;
         }
 
-        function renderSharedMermaid(mermaidCode) {
+        async function renderSharedMermaid(mermaidCode) {
           const chartInner = document.getElementById("chartInner");
           if (!chartInner) return;
 
@@ -1614,7 +1614,7 @@ const HELP_TEXT_HTML = `
               src.disabled = true;
             }
 
-            renderSharedMermaid(mermaidCode);
+            await renderSharedMermaid(mermaidCode);
             setStatus("success", "Shared diagram loaded.");
           } catch (e) {
             console.error(e);
