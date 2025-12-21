@@ -1507,7 +1507,22 @@ const HELP_TEXT_HTML = `
           if (!chartInner) return;
 
           chartInner.innerHTML = `<div class="mermaid">${mermaidCode}</div>`;
-          mermaid.init(undefined, chartInner.querySelector(".mermaid"));
+
+          try {
+            // ✅ 먼저 문법/구조 검증 (여기서 걸리면 init 하지 않음)
+            await mermaid.parse(mermaidCode);
+
+            // ✅ 검증 통과 시에만 렌더
+            await mermaid.init(undefined, chartInner.querySelector(".mermaid"));
+          } catch (e) {
+            console.error("Mermaid render failed:", e);
+            chartInner.innerHTML = `
+              <p class="placeholder" style="color:#b91c1c;">
+                Mermaid render failed: ${e?.message || e}
+              </p>`;
+            return;
+          }
+
 
           // 기존 코드에 있는 확대/클릭핸들러도 그대로 재사용
           try { applyDiagramZoom(); } catch(e) {}
@@ -1772,11 +1787,12 @@ const HELP_TEXT_HTML = `
             ctx.drawImage(img, 0, 0, width, height);
 
             // 5) PNG 저장
-            let blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
-            if (!blob && effScale > 1) {
-              // 마지막 수단: 1x로 재시도
-              effScale = 1;
-              canvas.width = Math.max(1, Math.floor(width * dpr * effScale));
+            let blob = null;
+
+            // ✅ 여러 번 점진적으로 축소 재시도
+            let tries = 0;
+            while (!blob && effScale >= 0.1 && tries < 6) {
+              canvas.width  = Math.max(1, Math.floor(width  * dpr * effScale));
               canvas.height = Math.max(1, Math.floor(height * dpr * effScale));
               ctx.setTransform(dpr * effScale, 0, 0, dpr * effScale, 0, 0);
 
@@ -1787,10 +1803,16 @@ const HELP_TEXT_HTML = `
               ctx.drawImage(img, 0, 0, width, height);
 
               blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+
+              if (!blob) {
+                // ✅ 다음 라운드에서 더 줄여서 재시도
+                effScale *= 0.75;
+                tries += 1;
+              }
             }
 
             if (!blob) {
-              alert("Failed to create PNG blob. Try Scale 1x or download SVG.");
+              alert("Failed to create PNG blob. Try lowering PNG Scale in Settings, or export as SVG.");
               return;
             }
 
@@ -3008,7 +3030,21 @@ const HELP_TEXT_HTML = `
                 
                 // 정상 플로우차트 생성
                 chartInner.innerHTML = `<div class="mermaid">${mermaidCode}</div>`;
-                mermaid.init(undefined, chartInner.querySelector(".mermaid"));
+
+                try {
+                  await mermaid.parse(mermaidCode);
+                  await mermaid.init(undefined, chartInner.querySelector(".mermaid"));
+                } catch (e) {
+                  console.error("Mermaid render failed:", e);
+                  setStatus("error", `Mermaid render failed: ${e?.message || e}`);
+                  chartInner.innerHTML = `
+                    <p class="placeholder" style="color:#b91c1c;">
+                      Mermaid render failed: ${e?.message || e}
+                    </p>`;
+                  currentFunc.textContent = "";
+                  return;
+                }
+
                 applyDiagramZoom();
                 setTimeout(attachNodeClickHandlers, 50);
 
