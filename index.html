@@ -2262,7 +2262,7 @@ const HELP_TEXT_HTML = `
           const ub = document.getElementById("upgradeButton");
           if (ub) {
             const tier = window.__planTier || (window.__isProUser ? "pro" : "free");
-            onst shouldShow = (tier !== "expert") && !window.__isTestAccount;
+            const shouldShow = (tier !== "expert") && !window.__isTestAccount;
 
             ub.style.display = shouldShow ? "inline-flex" : "none";
             if (shouldShow) ub.classList.add("upgrade-blink");
@@ -3094,7 +3094,7 @@ const HELP_TEXT_HTML = `
                         // - Pro  : Expert로 업그레이드 유도
                         const ub = document.getElementById("upgradeButton");
                         if (ub) {
-                          const shouldShow = (tier === "free") && !window.__isTestAccount;
+                          const shouldShow = (tier !== "expert") && !window.__isTestAccount;
                           ub.style.display = shouldShow ? "inline-flex" : "none";
                           if (shouldShow) ub.classList.add("upgrade-blink");
                         }
