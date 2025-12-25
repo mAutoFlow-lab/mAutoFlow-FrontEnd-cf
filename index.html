@@ -1055,7 +1055,7 @@ const HELP_TEXT_HTML = `
 
             // Test 계정 (exitgiveme)
             if (email === TEST_EMAIL) {
-                span.textContent = "Free tier: unlimited (test account).";
+                span.textContent = "Test account: unlimited usage.";
                 span.title = "Test account is not subject to any limits.";
                 return;
             }
@@ -1065,7 +1065,7 @@ const HELP_TEXT_HTML = `
 
             // 플랜 로딩 중: Free 문구 대신 로딩 표시
             if (isLoading) {
-                span.textContent = "Loading plan info...";
+                span.textContent = "Loading plan information...";
                 span.title       = "Fetching your subscription from Supabase...";
                 return;
             }
@@ -1092,7 +1092,7 @@ const HELP_TEXT_HTML = `
             if (tier === "free") {
                 // 아직 서버 usage 정보가 없는 초기 상태라면 기본 문구
                 if (window.__serverUsageCount == null || window.__dailyFreeLimit == null) {
-                    span.textContent = `Free tier: 5 diagrams/day, ≤ ${FREE_NODE_LIMIT} nodes.`;
+                    span.textContent = `Free plan: 5 diagrams per day, up to ${FREE_NODE_LIMIT} nodes.`;
                     span.title = "Daily limit is enforced on the server.";
                     return;
                 }
@@ -1241,7 +1241,7 @@ const HELP_TEXT_HTML = `
             btn.textContent = "HELP";
             btn.classList.remove("btn-code-blink");
 
-            let rightText = "Automatic analysis";
+            let rightText = "Automatic Analysis";
             if (typeof window.__nodeCount === "number" && window.__nodeCount > 0) {
                 rightText = `Nodes: ${window.__nodeCount}`;
             }
@@ -1254,7 +1254,7 @@ const HELP_TEXT_HTML = `
             // ✅ 초기 상태와 동일하게: lineNumbers + textarea 둘 다 복원
             codeArea.innerHTML = `
                 <div id="lineNumbers"></div>
-                <textarea id="src" spellcheck="false" placeholder="Paste your C / pseudo-C code here."></textarea>
+                <textarea id="src" spellcheck="false" placeholder="Paste your C or pseudo-C code here."></textarea>
             `;
 
             const src = document.getElementById("src");
@@ -1448,13 +1448,13 @@ const HELP_TEXT_HTML = `
 
         async function openShare() {
           if (getShareIdFromPath()) {
-            setStatus("info", "This is a shared view-only page.");
+            setStatus("info", "This is a read-only shared page.");
             return;
           }  
             
           // 로그인한 사용자만
           if (!window.currentUser) {
-            alert("Please log in to use Share.");
+            alert("Please log in to create a share link.");
             return;
           }
 
@@ -1466,12 +1466,12 @@ const HELP_TEXT_HTML = `
 
           overlay.classList.remove("modal-hidden");
           input.value = "";
-          if (hint) hint.textContent = "Generating share link...";
+          if (hint) hint.textContent = "Generating a share link...";
 
           // ✅ 1) 마지막 생성된 mermaid code 확보
           const mermaid_code = (window.__lastMermaidCode || "").trim();
           if (!mermaid_code) {
-            if (hint) hint.textContent = "No flowchart to share yet. Please generate a flowchart first.";
+            if (hint) hint.textContent = "There is no flowchart to share yet. Please generate one first.";
             return;
           }
 
@@ -1485,7 +1485,7 @@ const HELP_TEXT_HTML = `
           } catch (e) {}
 
           if (!accessToken) {
-            if (hint) hint.textContent = "Login session not found. Please log in again.";
+            if (hint) hint.textContent = "Your login session has expired. Please log in again.";
             return;
           }
 
@@ -1503,7 +1503,7 @@ const HELP_TEXT_HTML = `
             if (!res.ok) {
               let detail = "";
               try { detail = JSON.stringify(await res.json()); } catch(_) {}
-              if (hint) hint.textContent = `Share create failed (HTTP ${res.status}). ${detail}`;
+              if (hint) hint.textContent = `Failed to create share link (HTTP ${res.status}). ${detail}`;
               return;
             }
 
@@ -1511,7 +1511,7 @@ const HELP_TEXT_HTML = `
             const share_id = data.share_id;
 
             if (!share_id) {
-              if (hint) hint.textContent = "Share create failed: share_id missing.";
+              if (hint) hint.textContent = "Failed to create share link due to an unexpected error.";
               return;
             }
 
@@ -1537,8 +1537,8 @@ const HELP_TEXT_HTML = `
           if (!input || !input.value) return;
 
           navigator.clipboard.writeText(input.value)
-            .then(() => { if (hint) hint.textContent = "Copied!"; })
-            .catch(() => { if (hint) hint.textContent = "Copy failed. Please copy manually."; });
+            .then(() => { if (hint) hint.textContent = "Link copied."; })
+            .catch(() => { if (hint) hint.textContent = "Failed to copy the link. Please copy it manually."; });
         }
                    
 
@@ -1662,7 +1662,7 @@ const HELP_TEXT_HTML = `
             if (!res.ok) {
               // ✅ 만료/삭제/없음은 404로 통일 → 문구도 통일
               if (res.status === 404) {
-                setStatus("error", "Expired or removed");
+                setStatus("error", "This shared link has expired or has been removed");
                 return;
               }
 
@@ -1681,7 +1681,7 @@ const HELP_TEXT_HTML = `
             }
             
             if (!mermaidCode) {
-              setStatus("error", "Shared diagram is empty.");
+              setStatus("error", "The shared diagram is empty.");
               return;
             }
 
@@ -1694,10 +1694,10 @@ const HELP_TEXT_HTML = `
             }
 
             await renderSharedMermaid(mermaidCode);
-            setStatus("success", "Shared diagram loaded.");
+            setStatus("success", "Shared diagram loaded successfully.");
           } catch (e) {
             console.error(e);
-            setStatus("error", "Failed to load shared diagram.");
+            setStatus("error", "Failed to load the shared diagram.");
           }
         }
 
@@ -1937,7 +1937,7 @@ const HELP_TEXT_HTML = `
           } catch (e) {}
 
           if (!accessToken) {
-            alert("Login session not found. Please log in again.");
+            alert("Your login session has expired. Please log in again.");
             return;
           }
 
@@ -2798,7 +2798,7 @@ const HELP_TEXT_HTML = `
                         formData.append("user_email", window.currentUser.email || "");
                     }
                 } else {
-                    setStatus("error", "Login session not found. Please log in again.");
+                    setStatus("error", "Your login session has expired. Please log in again.");
                     return;
                 }
 
@@ -3715,7 +3715,7 @@ const HELP_TEXT_HTML = `
             <div id="codeContainer">
                 <div id="codeHeader">
                     <span>mAutoFlow</span>
-                    <span style="opacity:0.7;">Automatic analysis</span>
+                    <span style="opacity:0.7;">Automatic Analysis</span>
                 </div>
                 <div id="codeArea">
                     <div id="lineNumbers"></div>
@@ -4067,7 +4067,7 @@ void main(void)
             if (codeHeader) {
                 codeHeader.innerHTML = `
                     <span>mAutoFlow</span>
-                    <span style="opacity:0.7;">Automatic analysis</span>
+                    <span style="opacity:0.7;">Automatic Analysis</span>
                 `;
             }
 
