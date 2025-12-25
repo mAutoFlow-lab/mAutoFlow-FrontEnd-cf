@@ -2262,7 +2262,7 @@ const HELP_TEXT_HTML = `
           const ub = document.getElementById("upgradeButton");
           if (ub) {
             const tier = window.__planTier || (window.__isProUser ? "pro" : "free");
-            const shouldShow = (tier === "free") && !window.__isTestAccount;
+            onst shouldShow = (tier !== "expert") && !window.__isTestAccount;
 
             ub.style.display = shouldShow ? "inline-flex" : "none";
             if (shouldShow) ub.classList.add("upgrade-blink");
@@ -2993,8 +2993,8 @@ const HELP_TEXT_HTML = `
                     // Expert 플랜 또는 테스트 계정(exitgiveme)만 UPGRADE 숨김
                     const tier = window.__planTier || (window.__isProUser ? "pro" : "free");
 
-                    // ✅ Free에서만 보여주기
-                    const shouldShow = (tier === "free") && !window.__isTestAccount;
+                    // ✅ Free + Pro에서 보여주기 (Expert/Test만 숨김)
+                    const shouldShow = (tier !== "expert") && !window.__isTestAccount;
 
                     upgradeBtn.style.display = shouldShow ? "inline-flex" : "none";
                     upgradeBtn.classList.remove("upgrade-blink");
@@ -3018,6 +3018,21 @@ const HELP_TEXT_HTML = `
 
                 const nodeCount = Object.keys(nodeLines).length;
                 window.__nodeCount = nodeCount;
+
+                // ✅ Pro: 노드 200 이상이면 UPGRADE 버튼 blink
+                const ub2 = document.getElementById("upgradeButton");
+                if (ub2 && !window.__isTestAccount) {
+                  const tier2 = window.__planTier || (window.__isProUser ? "pro" : "free");
+
+                  // Free+Pro는 표시, Expert는 숨김
+                  ub2.style.display = (tier2 !== "expert") ? "inline-flex" : "none";
+
+                  // Pro에서만 200+ blink
+                  if (tier2 === "pro" && nodeCount >= 200) ub2.classList.add("upgrade-blink");
+                  else if (tier2 === "pro") ub2.classList.remove("upgrade-blink");
+                }
+
+                
                 window.__nodeLines = nodeLines;
 
                 const codeHeader = document.getElementById("codeHeader");
