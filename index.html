@@ -2961,8 +2961,8 @@ const HELP_TEXT_HTML = `
                         return;
                     }
 
-                                    // 그 외 일반 서버 에러
-                    setStatus("error", `Server error (${res.status}). Please try again later.`);
+                    // 그 외 일반 서버 에러
+                    setStatus("error", `Temporary server issue (${res.status}). Please try again later.`);
                     chartInner.innerHTML = '<p class="placeholder">A server error occurred.</p>';
                     currentFunc.textContent = "";
                     return;
