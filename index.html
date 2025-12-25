@@ -1235,15 +1235,6 @@ const HELP_TEXT_HTML = `
 
                 // 자동 플로우차트 갱신
                 src.addEventListener("input", function() {
-                    // ✅ Free 플랜에서는 자동분석(=usage 증가/서버 호출) 막기
-                    const tier = (window.__planTier || "").toLowerCase();
-                    if (!tier || tier === "free") {
-                        setStatus("success", "Free plan: Automatic analysis is disabled. Click 'Regenerate Now' to generate.");
-                        // 라인 번호는 계속 갱신해주기
-                        if (lineNumbers) updateLineNumbersLocal();
-                        return;
-                    }
-
                     if (typingTimer) clearTimeout(typingTimer);
                     typingTimer = setTimeout(function() {
                         generateFlowchart(true);
@@ -3646,13 +3637,6 @@ const HELP_TEXT_HTML = `
                 if (macroField) {
                     macroField.value = "";
                     macroField.disabled = true;
-                }
-
-                // ✅ Free 플랜에서는 자동분석(=usage 증가/서버 호출) 막기
-                const tier = (window.__planTier || "").toLowerCase();
-                if (!tier || tier === "free") {
-                    setStatus("success", "Free plan: Automatic analysis is disabled. Click 'Regenerate Now' to generate.");
-                    return;
                 }
 
                 if (typingTimer) clearTimeout(typingTimer);
