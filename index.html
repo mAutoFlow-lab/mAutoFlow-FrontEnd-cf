@@ -1236,9 +1236,16 @@ const HELP_TEXT_HTML = `
                 // 자동 플로우차트 갱신
                 src.addEventListener("input", function() {
                     if (typingTimer) clearTimeout(typingTimer);
-                    typingTimer = setTimeout(function() {
-                        generateFlowchart(true);
-                    }, TYPING_DELAY_MS);
+                    typingTimer = setTimeout(() => {
+                    // Free 플랜에서는 자동분석으로 서버 호출(=usage 증가)하지 않도록 차단
+                    const tier = (window.__planTier || "").toLowerCase(); // planTier를 window에 저장해두는 로직이 이미 있음
+                    if (!tier || tier === "free") {
+                      setStatus("success", "Free plan: Automatic analysis is disabled. Click 'Regenerate Now' to generate.");
+                      return;
+                    }
+
+                    generateFlowchart(true);
+                }, TYPING_DELAY);
 
                     // 라인 번호도 같이 갱신
                     if (lineNumbers) updateLineNumbersLocal();
