@@ -1108,6 +1108,41 @@ const HELP_TEXT_HTML = `
             span.title = "";
         }
 
+        // [ADD] UPGRADE 버튼 표시/블링크 단일화
+        function applyUpgradeButtonUI(nodeCount, opts = {}) {
+          const upgradeBtn = document.getElementById("upgradeButton");
+          if (!upgradeBtn) return;
+
+          const forceBlink = !!opts.forceBlink;
+
+          // tier 결정은 항상 동일 규칙으로
+          const tier = window.__planTier || (window.__isProUser ? "pro" : "free");
+          const isTest = !!window.__isTestAccount;
+
+          // ✅ 요구사항: Free/Pro에서는 표시, Expert/Test만 숨김
+          const shouldShow = (tier !== "expert") && !isTest;
+          upgradeBtn.style.display = shouldShow ? "inline-flex" : "none";
+
+          // blink 초기화
+          upgradeBtn.classList.remove("upgrade-blink");
+
+          if (!shouldShow) return;
+
+          // ✅ blink 규칙 (기능추가/삭제 없이 "현재 의도"만 단일화)
+          // - 에러(노드 초과 등) 상황은 forceBlink로 통일
+          // - Pro: nodeCount >= 200 이면 blink (요구사항)
+          // - Free: 기존처럼 "노드 제한 에러"에선 blink (기존 동작 유지)
+          if (forceBlink) {
+            upgradeBtn.classList.add("upgrade-blink");
+            return;
+          }
+
+          if (tier === "pro" && typeof nodeCount === "number" && nodeCount >= 200) {
+            upgradeBtn.classList.add("upgrade-blink");
+          }
+        }
+                   
+
         async function refreshPlanFromSupabase() {
             // 아직 로그인 전이면 아무 것도 안 함
             if (!window.supabase || !window.currentUser) return;
@@ -2978,18 +3013,7 @@ const HELP_TEXT_HTML = `
                 }
                 window.__nodeLimit = effectiveNodeLimit;
 
-                // UPGRADE 버튼 표시/숨김
-                const upgradeBtn = document.getElementById("upgradeButton");
-                if (upgradeBtn) {
-                    // Expert 플랜 또는 테스트 계정(exitgiveme)만 UPGRADE 숨김
-                    const tier = window.__planTier || (window.__isProUser ? "pro" : "free");
-
-                    // ✅ Free + Pro에서 보여주기 (Expert/Test만 숨김)
-                    const shouldShow = (tier !== "expert") && !window.__isTestAccount;
-
-                    upgradeBtn.style.display = shouldShow ? "inline-flex" : "none";
-                    upgradeBtn.classList.remove("upgrade-blink");
-                }
+                applyUpgradeButtonUI(); // nodeCount 계산 전이라도 UPGRADE 표시/숨김은 정리됨
 
                 // 서버에서 내려준 사용량 정보 (일반 계정인 경우)
                 if (!isTestUser && typeof data.usage_count === "number") {
@@ -3011,18 +3035,7 @@ const HELP_TEXT_HTML = `
                 window.__nodeCount = nodeCount;
 
                 // ✅ Pro: 노드 200 이상이면 UPGRADE 버튼 blink
-                const ub2 = document.getElementById("upgradeButton");
-                if (ub2 && !window.__isTestAccount) {
-                  const tier2 = window.__planTier || (window.__isProUser ? "pro" : "free");
-
-                  // Free+Pro는 표시, Expert는 숨김
-                  ub2.style.display = (tier2 !== "expert") ? "inline-flex" : "none";
-
-                  // Pro에서만 200+ blink
-                  if (tier2 === "pro" && nodeCount >= 200) ub2.classList.add("upgrade-blink");
-                  else if (tier2 === "pro") ub2.classList.remove("upgrade-blink");
-                }
-
+                applyUpgradeButtonUI(nodeCount);
                 
                 window.__nodeLines = nodeLines;
 
@@ -3083,12 +3096,7 @@ const HELP_TEXT_HTML = `
                         // UPGRADE 버튼 파스텔 연두색 블링크
                         // - Free : Pro로 업그레이드 유도
                         // - Pro  : Expert로 업그레이드 유도
-                        const ub = document.getElementById("upgradeButton");
-                        if (ub) {
-                          const shouldShow = (tier !== "expert") && !window.__isTestAccount;
-                          ub.style.display = shouldShow ? "inline-flex" : "none";
-                          if (shouldShow) ub.classList.add("upgrade-blink");
-                        }
+                        applyUpgradeButtonUI(nodeCount, { forceBlink: true });
 
                         return;
                     }
