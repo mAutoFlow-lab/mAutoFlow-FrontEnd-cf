@@ -2415,6 +2415,7 @@ const HELP_TEXT_HTML = `
             }
 
             const nodeLines = window.__nodeLines || {};
+            const nodeSpans = window.__nodeSpans || {};
 
             clearNodeHighlight();
 
@@ -2424,12 +2425,23 @@ const HELP_TEXT_HTML = `
             let bestNode = null;
             let bestScore = 0;
             let bestDist = Infinity;
+            let bestSpanLen = Infinity;
+            const hasSpans = nodeSpans && Object.keys(nodeSpans).length > 0;
 
             nodes.forEach(node => {
                 const rawId = node.getAttribute("id") || "";
                 const m = rawId.match(/(?:flowchart-)?(N\d+)/);
                 if (!m) return;
                 const nodeKey = m[1];   // N1, N2 ...
+
+                // ✅ span 기반(라인 포함 여부) 후보 필터링
+                if (hasSpans) {
+                    const span = nodeSpans[nodeKey];
+                    if (!Array.isArray(span) || span.length !== 2) return;
+                    const s = span[0], e = span[1];
+                    if (typeof s !== "number" || typeof e !== "number") return;
+                    if (idx < s || idx > e) return;
+                }
 
                 const mappedLine = nodeLines[nodeKey];
 
@@ -2440,17 +2452,31 @@ const HELP_TEXT_HTML = `
                 const score = calcMatchScore(normLine, normLabel);
                 if (score <= 0) return;   // 전혀 안 맞으면 후보 제외
 
-                // body_start_line 한 칸 오차 같은 경우를 위해 "라인 거리"도 같이 고려
-                const dist = (typeof mappedLine === "number")
-                    ? Math.abs(mappedLine - idx)
-                    : Infinity;
+                let dist = Infinity;
+                let spanLen = Infinity;
+
+                if (hasSpans) {
+                    const span = nodeSpans[nodeKey];
+                    const s = span[0], e = span[1];
+                    dist = 0;
+                    spanLen = Math.abs(e - s);
+                } else {
+                    dist = (typeof mappedLine === "number")
+                        ? Math.abs(mappedLine - idx)
+                        : Infinity;
+                }
 
                 if (
                     score > bestScore ||
-                    (score === bestScore && dist < bestDist)
+                    (score === bestScore && (
+                        // span 기반이면 더 짧은 span(=더 구체적)을 우선
+                        (hasSpans && spanLen < bestSpanLen) ||
+                        (!hasSpans && dist < bestDist)
+                    ))
                 ) {
                     bestScore = score;
                     bestDist = dist;
+                    if (hasSpans) bestSpanLen = spanLen;
                     bestNode = node;
                 }
             });
@@ -2505,6 +2531,52 @@ const HELP_TEXT_HTML = `
             textarea.scrollTop = Math.max(0, targetScroll);
 
             return idx;
+        }
+
+        // ✅ 여러 줄 span(startLine~endLine, 0-based inclusive)을 통째로 하이라이트
+        //    반환값: startLine (없으면 -1)
+        function highlightCodeSpan(startLine, endLine) {
+            const textarea = document.getElementById("src");
+            if (!textarea) return -1;
+
+            const code  = textarea.value;
+            const lines = code.split("\n");
+            if (!lines.length) return -1;
+
+            let s = startLine;
+            let e = endLine;
+
+            // 보정
+            if (typeof s !== "number" || typeof e !== "number") return -1;
+            if (s < 0) s = 0;
+            if (e < 0) e = 0;
+            if (s >= lines.length) s = lines.length - 1;
+            if (e >= lines.length) e = lines.length - 1;
+            if (e < s) [s, e] = [e, s];
+
+            // start index
+            let start = 0;
+            for (let i = 0; i < s; i++) {
+                start += lines[i].length + 1;
+            }
+
+            // end index (end line 끝까지)
+            let end = start;
+            for (let i = s; i <= e; i++) {
+                end += lines[i].length;
+                if (i !== e) end += 1; // '\n'
+            }
+
+            textarea.focus();
+            textarea.setSelectionRange(start, end);
+
+            // 스크롤: span 중간쯤으로
+            const mid          = Math.floor((s + e) / 2);
+            const ratio        = mid / Math.max(1, lines.length - 1);
+            const targetScroll = textarea.scrollHeight * ratio - textarea.clientHeight / 2;
+            textarea.scrollTop = Math.max(0, targetScroll);
+
+            return s;
         }
 
 
@@ -2652,6 +2724,7 @@ const HELP_TEXT_HTML = `
             if (!svg) return;
 
             const nodeLines = window.__nodeLines || {};
+            const nodeSpans = window.__nodeSpans || {};
 
             const nodes = svg.querySelectorAll(".node");
             nodes.forEach(node => {
@@ -2684,16 +2757,24 @@ const HELP_TEXT_HTML = `
                     if (lower.startsWith("start")) return;
                     if (lower.startsWith("end")) return;
 
-                    // node_lines에서 온 라인 번호는 "힌트"로만 사용
+                    // ✅ 1차: node_spans가 있으면 span 전체를 하이라이트 (가장 정확)
+                    const span = nodeSpans[nodeKey];
+                    if (Array.isArray(span) && span.length === 2) {
+                        const s = span[0];
+                        const e = span[1];
+                        const ok = highlightCodeSpan(s, e);
+                        if (ok >= 0) return;
+                    }
+
+                    // node_lines에서 온 라인 번호는 "힌트"로만 사용 (호환/백업)
                     const mapped = nodeLines[nodeKey];
                     const approxHint =
                         (typeof mapped === "number") ? mapped : null;
 
-                    // 1차: 항상 문자열 기반 매칭 사용
+                    // 2차: 문자열 기반 매칭 사용
                     let bestLine = highlightCodeForLabel(label, approxHint);
 
-                    // 2차: 텍스트 매칭이 완전히 실패한 경우에만
-                    //      node_lines 라인 번호 그대로 사용 (fallback)
+                    // 3차: 텍스트 매칭이 완전히 실패한 경우에만 node_lines fallback
                     if (bestLine < 0 && typeof mapped === "number") {
                         bestLine = highlightCodeAtLine(mapped);
                     }
@@ -2985,7 +3066,8 @@ const HELP_TEXT_HTML = `
                 const funcName      = data.func_name || "";
                 const fullSignature = data.full_signature || "";
                 const nodeLines     = data.node_lines || {};
-
+                const nodeSpans     = data.node_spans || {};
+                
                 // 백엔드에서 온 계정 상태 반영
                 window.__isProUser      = !!data.is_pro_user;          // Pro + Expert 모두 true
                 window.__planName       = data.plan_name || null;
@@ -3031,13 +3113,14 @@ const HELP_TEXT_HTML = `
                     return;
                 }
 
-                const nodeCount = Object.keys(nodeLines).length;
+                const nodeCount = Object.keys(nodeSpans).length;
                 window.__nodeCount = nodeCount;
 
                 // ✅ Pro: 노드 200 이상이면 UPGRADE 버튼 blink
                 applyUpgradeButtonUI(nodeCount);
-                
+
                 window.__nodeLines = nodeLines;
+                window.__nodeSpans = nodeSpans;
 
                 const codeHeader = document.getElementById("codeHeader");
                 if (codeHeader) {
