@@ -3054,10 +3054,62 @@ const HELP_TEXT_HTML = `
                 
                 const errorMsg      = data.error || "";
                 const errorCode     = data.error_code || "";
+                
                 const funcName      = data.func_name || "";
                 const fullSignature = data.full_signature || "";
                 const nodeLines     = data.node_lines || {};
                 const nodeSpans     = data.node_spans || {};
+
+                // ✅ [추가] 프론트 textarea 라인 인덱스와 node_spans/node_lines 기준을 맞추기 (1~2줄 오프셋 보정)
+                function normalizeMapsByShift(linesMap, spansMap, shift) {
+                    if (!shift) return { linesMap, spansMap };
+
+                    const newLines = {};
+                    for (const k in linesMap) {
+                        const v = linesMap[k];
+                        newLines[k] = (typeof v === "number") ? (v + shift) : v;
+                    }
+
+                    const newSpans = {};
+                    for (const k in spansMap) {
+                        const sp = spansMap[k];
+                        if (Array.isArray(sp) && sp.length === 2 && typeof sp[0] === "number" && typeof sp[1] === "number") {
+                            newSpans[k] = [sp[0] + shift, sp[1] + shift];
+                        } else {
+                            newSpans[k] = sp;
+                        }
+                    }
+                    return { linesMap: newLines, spansMap: newSpans };
+                }
+
+                function inferShiftFromTextarea(spansMap) {
+                    // span의 최소 start
+                    let minSpanStart = Infinity;
+                    for (const k in spansMap) {
+                        const sp = spansMap[k];
+                        if (Array.isArray(sp) && sp.length === 2 && typeof sp[0] === "number") {
+                            minSpanStart = Math.min(minSpanStart, sp[0]);
+                        }
+                    }
+                    if (!Number.isFinite(minSpanStart)) return 0;
+
+                    // textarea의 첫 “의미있는” 코드 라인 (빈줄/공백 제외)
+                    const textarea = document.getElementById("src");
+                    if (!textarea) return 0;
+
+                    const lines = (textarea.value || "").split("\n");
+                    let firstNonEmpty = 0;
+                    while (firstNonEmpty < lines.length && !lines[firstNonEmpty].trim()) firstNonEmpty++;
+
+                    const shift = firstNonEmpty - minSpanStart;
+
+                    // 보정은 과하면 위험하니 0~2만 허용 (네 증상이 1~2줄)
+                    if (shift < 0 || shift > 2) return 0;
+                    return shift;
+                }
+
+                const shift = inferShiftFromTextarea(nodeSpans);
+                const norm = normalizeMapsByShift(nodeLines, nodeSpans, shift);
                 
                 // 백엔드에서 온 계정 상태 반영
                 window.__isProUser      = !!data.is_pro_user;          // Pro + Expert 모두 true
