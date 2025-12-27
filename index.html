@@ -2412,8 +2412,10 @@ const HELP_TEXT_HTML = `
             const nodeSpans = window.__nodeSpans || {};
             const hasSpans  = nodeSpans && Object.keys(nodeSpans).length > 0;
 
-            const normLine = normalizeForMatch(lines[idx]);
-            if (!normLine && !hasSpans) {
+            const normLine = normalizeForMatch(lines[idx]) || "";
+
+            // span이 없고, 현재 줄도 비어있으면 하이라이트 해제하고 종료
+            if (!hasSpans && !normLine) {
                 clearNodeHighlight();
                 return;
             }
@@ -2466,18 +2468,26 @@ const HELP_TEXT_HTML = `
                         : Infinity;
                 }
 
-                if (
-                    score > bestScore ||
-                    (score === bestScore && (
-                        // span 기반이면 더 짧은 span(=더 구체적)을 우선
-                        (hasSpans && spanLen < bestSpanLen) ||
-                        (!hasSpans && dist < bestDist)
-                    ))
-                ) {
-                    bestScore = score;
-                    bestDist = dist;
-                    if (hasSpans) bestSpanLen = spanLen;
-                    bestNode = node;
+                if (hasSpans) {
+                    // ✅ span 모드: "더 짧은 span"이 무조건 1순위, score는 동률일 때만
+                    if (
+                        spanLen < bestSpanLen ||
+                        (spanLen === bestSpanLen && score > bestScore)
+                    ) {
+                        bestSpanLen = spanLen;
+                        bestScore = score;
+                        bestNode = node;
+                    }
+                } else {
+                    // 기존 라인/문자열 기반 로직 유지
+                    if (
+                        score > bestScore ||
+                        (score === bestScore && dist < bestDist)
+                    ) {
+                        bestScore = score;
+                        bestDist = dist;
+                        bestNode = node;
+                    }
                 }
             });
 
