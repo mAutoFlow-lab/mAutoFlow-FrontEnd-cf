@@ -2408,15 +2408,15 @@ const HELP_TEXT_HTML = `
             if (idx < 0) idx = 0;
             if (idx >= lines.length) idx = lines.length - 1;
 
-            const normLine = normalizeForMatch(lines[idx]);
-            if (!normLine) {
-                clearNodeHighlight();
-                return;
-            }
-
             const nodeLines = window.__nodeLines || {};
             const nodeSpans = window.__nodeSpans || {};
             const hasSpans  = nodeSpans && Object.keys(nodeSpans).length > 0;
+
+            const normLine = normalizeForMatch(lines[idx]);
+            if (!normLine && !hasSpans) {
+                clearNodeHighlight();
+                return;
+            }
 
             clearNodeHighlight();
 
@@ -2450,7 +2450,7 @@ const HELP_TEXT_HTML = `
                 if (!normLabel) return;
 
                 const score = calcMatchScore(normLine, normLabel);
-                if (score <= 0) return;   // 전혀 안 맞으면 후보 제외
+                if (!hasSpans && score <= 0) return;   // span 없을 때만 점수 필터
 
                 let dist = Infinity;
                 let spanLen = Infinity;
@@ -2704,9 +2704,6 @@ const HELP_TEXT_HTML = `
         function attachNodeClickHandlers() {
             const svg = document.querySelector("#chartInner svg");
             if (!svg) return;
-
-            const nodeLines = window.__nodeLines || {};
-            const nodeSpans = window.__nodeSpans || {};
 
             const nodes = svg.querySelectorAll(".node");
             nodes.forEach(node => {
