@@ -2416,6 +2416,7 @@ const HELP_TEXT_HTML = `
 
             const nodeLines = window.__nodeLines || {};
             const nodeSpans = window.__nodeSpans || {};
+            const hasSpans  = nodeSpans && Object.keys(nodeSpans).length > 0;
 
             clearNodeHighlight();
 
@@ -2760,10 +2761,8 @@ const HELP_TEXT_HTML = `
                     // ✅ 1차: node_spans가 있으면 span 전체를 하이라이트 (가장 정확)
                     const span = nodeSpans[nodeKey];
                     if (Array.isArray(span) && span.length === 2) {
-                        const s = span[0];
-                        const e = span[1];
-                        const ok = highlightCodeSpan(s, e);
-                        if (ok >= 0) return;
+                        highlightCodeSpan(span[0], span[1]);
+                        return;
                     }
 
                     // node_lines에서 온 라인 번호는 "힌트"로만 사용 (호환/백업)
