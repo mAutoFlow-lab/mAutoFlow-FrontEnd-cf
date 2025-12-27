@@ -2427,8 +2427,7 @@ const HELP_TEXT_HTML = `
             let bestScore = 0;
             let bestDist = Infinity;
             let bestSpanLen = Infinity;
-            const hasSpans = nodeSpans && Object.keys(nodeSpans).length > 0;
-
+            
             nodes.forEach(node => {
                 const rawId = node.getAttribute("id") || "";
                 const m = rawId.match(/(?:flowchart-)?(N\d+)/);
@@ -2540,42 +2539,24 @@ const HELP_TEXT_HTML = `
             const textarea = document.getElementById("src");
             if (!textarea) return -1;
 
-            const code  = textarea.value;
-            const lines = code.split("\n");
+            const lines = textarea.value.split("\n");
             if (!lines.length) return -1;
 
-            let s = startLine;
-            let e = endLine;
+            let s = Math.max(0, startLine);
+            let e = Math.min(endLine, lines.length - 1);
 
-            // 보정
-            if (typeof s !== "number" || typeof e !== "number") return -1;
-            if (s < 0) s = 0;
-            if (e < 0) e = 0;
-            if (s >= lines.length) s = lines.length - 1;
-            if (e >= lines.length) e = lines.length - 1;
-            if (e < s) [s, e] = [e, s];
-
-            // start index
             let start = 0;
             for (let i = 0; i < s; i++) {
                 start += lines[i].length + 1;
             }
 
-            // end index (end line 끝까지)
             let end = start;
             for (let i = s; i <= e; i++) {
-                end += lines[i].length;
-                if (i !== e) end += 1; // '\n'
+                end += lines[i].length + 1;
             }
 
             textarea.focus();
             textarea.setSelectionRange(start, end);
-
-            // 스크롤: span 중간쯤으로
-            const mid          = Math.floor((s + e) / 2);
-            const ratio        = mid / Math.max(1, lines.length - 1);
-            const targetScroll = textarea.scrollHeight * ratio - textarea.clientHeight / 2;
-            textarea.scrollTop = Math.max(0, targetScroll);
 
             return s;
         }
@@ -2734,6 +2715,10 @@ const HELP_TEXT_HTML = `
                     // ✅ 클릭 시점에 항상 최신 textarea를 다시 가져온다
                     const textarea = document.getElementById("src");
                     if (!textarea) return;
+
+                    // ✅ 항상 최신 전역 맵을 클릭 시점에 확보
+                    const nodeSpans = window.__nodeSpans || {};
+                    const nodeLines = window.__nodeLines || {};
 
                     // 선택된 노드 하이라이트
                     clearNodeHighlight();
