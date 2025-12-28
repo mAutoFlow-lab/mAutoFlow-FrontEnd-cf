@@ -137,6 +137,52 @@
           100% { transform: translate(0px, 0px) rotate(0deg); }
         }
 
+        /* ===== Intro: 글자가 순서대로 튕기며 등장 ===== */
+        .logo .logo-letter{
+          opacity: 0;
+          animation-name: logoIntro, logoFloat;          /* intro 후 float */
+          animation-duration: 700ms, 2.6s;
+          animation-iteration-count: 1, infinite;
+          animation-timing-function: cubic-bezier(.2,.9,.2,1), ease-in-out;
+          animation-fill-mode: forwards, both;
+        }
+
+        /* intro 애니메이션 */
+        @keyframes logoIntro{
+          0%   { opacity: 0; transform: translate(0px, -10px) scale(0.9) rotate(-6deg); }
+          65%  { opacity: 1; transform: translate(0px, 2px)  scale(1.06) rotate(3deg); }
+          100% { opacity: 1; transform: translate(0px, 0px)  scale(1.0)  rotate(0deg); }
+        }
+
+        /* ===== Hover: 폭발(튕겨나가기) ===== */
+        .logo:hover .logo-letter{
+          animation-name: logoIntro, logoFloat; /* 기본은 유지 */
+        }
+
+        /* hover 시 각 글자에 JS가 넣어주는 CSS 변수로 이동 */
+        .logo.booming .logo-letter{
+          transition: transform 220ms ease, filter 220ms ease;
+          transform: translate(var(--bx, 0px), var(--by, 0px)) rotate(var(--br, 0deg)) scale(1.06);
+          filter: brightness(1.05);
+        }
+
+        /* ===== Random Jitter(짧게 덜덜) ===== */
+        .logo .logo-letter.jitter{
+          animation-name: logoIntro, logoFloat, logoJitter;
+          animation-duration: 700ms, 2.6s, 220ms;
+          animation-iteration-count: 1, infinite, 1;
+          animation-timing-function: cubic-bezier(.2,.9,.2,1), ease-in-out, linear;
+        }
+
+        @keyframes logoJitter{
+          0%   { transform: translate(0px, 0px) rotate(0deg); }
+          25%  { transform: translate(1px, -1px) rotate(2deg); }
+          50%  { transform: translate(-1px, 1px) rotate(-2deg); }
+          75%  { transform: translate(1px, 1px) rotate(1deg); }
+          100% { transform: translate(0px, 0px) rotate(0deg); }
+        }
+      
+
         /* 특정 글자(예: m, A)에만 가끔 뒤집힘 */
         .logo .flip {
           animation-name: logoFloat, logoFlip;
@@ -3504,10 +3550,51 @@ const HELP_TEXT_HTML = `
             const sp = document.createElement("span");
             sp.className = "logo-letter";
             sp.textContent = ch;
-            sp.style.animationDelay = `${i * 0.08}s`;
+
+            /* ✅ 1) Intro가 “순서대로” 나오게 delay를 더 확실히 */
+            sp.style.animationDelay = `${i * 0.10}s`;
+
+            /* ✅ 2) Hover 폭발용 랜덤 방향/회전값 (CSS 변수) */
+            const angle = (Math.random() * Math.PI * 2);
+            const dist = 10 + Math.random() * 16;      // 폭발 거리
+            const bx = Math.round(Math.cos(angle) * dist);
+            const by = Math.round(Math.sin(angle) * dist);
+            const br = Math.round((Math.random() * 2 - 1) * 18); // 회전
+
+            sp.style.setProperty("--bx", `${bx}px`);
+            sp.style.setProperty("--by", `${by}px`);
+            sp.style.setProperty("--br", `${br}deg`);
+
+            /* ✅ 3) m/A는 가끔 뒤집힘 유지 */
             if (ch === "m" || ch === "A") sp.classList.add("flip");
+
             el.appendChild(sp);
           });
+
+          /* ===== 3) Hover 폭발 이벤트 (여기!) ===== */
+          el.addEventListener("mouseenter", () => {
+            el.classList.add("booming");
+          });
+          el.addEventListener("mouseleave", () => {
+            el.classList.remove("booming");
+          });  
+
+          el.addEventListener("mouseenter", () => {
+            el.classList.add("booming");
+          });
+          el.addEventListener("mouseleave", () => {
+            el.classList.remove("booming");
+          });
+
+          /* ===== 4) 랜덤 흔들림 (여기!) ===== */
+          setInterval(() => {
+            const letters = el.querySelectorAll(".logo-letter");
+            if (!letters.length) return;
+
+            const pick = letters[Math.floor(Math.random() * letters.length)];
+            pick.classList.add("jitter");
+            setTimeout(() => pick.classList.remove("jitter"), 260);
+          }, 1400);
         }
 
         document.addEventListener("DOMContentLoaded", async function() {
