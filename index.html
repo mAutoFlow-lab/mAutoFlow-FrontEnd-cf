@@ -108,6 +108,50 @@
             opacity: 0.85;
         }
 
+        /* ===== Animated Logo ===== */
+        .logo{
+          display: inline-flex;
+          gap: 0px;
+          font-size: 20px;       /* 기존 header h1 크기(20px)와 맞춤 */
+          font-weight: bold;
+          line-height: 1.1;
+          user-select: none;
+          cursor: default;
+        }
+
+        .logo .logo-letter{
+          display: inline-block;
+          will-change: transform;
+          animation-name: logoFloat;
+          animation-duration: 2.6s;
+          animation-iteration-count: infinite;
+          animation-timing-function: ease-in-out;
+        }
+
+        /* 둥실둥실 + 살짝 좌우 흔들림 */
+        @keyframes logoFloat{
+          0%   { transform: translate(0px, 0px) rotate(0deg); }
+          25%  { transform: translate(1px, -2px) rotate(1deg); }
+          50%  { transform: translate(0px, 0px) rotate(0deg); }
+          75%  { transform: translate(-1px, 2px) rotate(-1deg); }
+          100% { transform: translate(0px, 0px) rotate(0deg); }
+        }
+
+        /* 특정 글자(예: m, A)에만 가끔 뒤집힘 */
+        .logo .flip {
+          animation-name: logoFloat, logoFlip;
+          animation-duration: 2.6s, 4.8s;
+          animation-iteration-count: infinite, infinite;
+          animation-timing-function: ease-in-out, ease-in-out;
+        }
+
+        @keyframes logoFlip{
+          0%   { transform: translate(0px, 0px) rotate(0deg); }
+          70%  { transform: translate(0px, 0px) rotate(0deg); }
+          85%  { transform: translate(0px, -2px) rotate(180deg); }
+          100% { transform: translate(0px, 0px) rotate(360deg); }
+        }  
+
         .main {
             flex: 1;
             display: flex;
@@ -3449,9 +3493,28 @@ const HELP_TEXT_HTML = `
             }
         }
 
+        function initAnimatedLogo() {
+          const el = document.getElementById("logo");
+          if (!el) return;
+
+          const text = "mAutoFlow";
+          el.innerHTML = "";
+
+          [...text].forEach((ch, i) => {
+            const sp = document.createElement("span");
+            sp.className = "logo-letter";
+            sp.textContent = ch;
+            sp.style.animationDelay = `${i * 0.08}s`;
+            if (ch === "m" || ch === "A") sp.classList.add("flip");
+            el.appendChild(sp);
+          });
+        }
+
         document.addEventListener("DOMContentLoaded", async function() {
             const src = document.getElementById("src");
             const lineNumbers = document.getElementById("lineNumbers");
+
+            initAnimatedLogo();   // 로고 span 생성 + 애니메이션 적용
 
             // 라인 번호 업데이트 함수
             function updateLineNumbers() {
@@ -3672,10 +3735,7 @@ const HELP_TEXT_HTML = `
 <body>
     <header>
         <div>
-            <h1>mAutoFlow</h1>
-            <div class="subtitle">
-                When you enter C code on the left, a flowchart is automatically generated on the right.
-            </div>
+            <h1 id="logo" class="logo" aria-label="mAutoFlow"></h1>
         </div>
 
         <!-- 오른쪽 상단 메뉴: 로그인 + 버튼 + 백엔드 버전 -->
