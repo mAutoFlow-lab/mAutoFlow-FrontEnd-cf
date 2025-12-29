@@ -164,11 +164,12 @@
           animation-timing-function: ease-in-out, ease-in-out;
         }
 
+        /* 변경 (✅ 84.9%에 먼저 붙고, 이후는 0 유지) */
         @keyframes wDriftLoop{
-          0%   { left: 0px; }
-          75%  { left: var(--wDriftX, 28px); }   /* 계속 멀어짐 */
-          85%  { left: var(--wDriftX, 28px); }   /* 잠깐 정지(타이밍 맞춤) */
-          100% { left: 0px; }                    /* 빠른 복귀 */
+          0%    { left: 0px; }
+          82%   { left: var(--wDriftX, 28px); }  /* 계속 멀어짐 */
+          84.9% { left: 0px; }                   /* ✅ 여기서 '붙음' 완료 */
+          100%  { left: 0px; }                   /* 붙은 채 유지 */
         }
 
         /* mA는 뒤집힘 구간에서만 1회 회전(주기 반복) */
@@ -179,11 +180,12 @@
           animation-timing-function: ease-in-out, ease-in-out;
         }
 
+        /* 변경 (✅ 87%부터 뒤집힘 시작 → w가 84.9%에 먼저 붙고 0.1초 후 뒤집힘) */
         @keyframes maSpinLoop{
           0%   { transform: translate(0px, 0px) rotate(0deg); }
-          70%  { transform: translate(0px, 0px) rotate(0deg); }
-          85%  { transform: translate(0px, -2px) rotate(180deg); }
-          100% { transform: translate(0px, 0px) rotate(360deg); }
+          87%  { transform: translate(0px, 0px) rotate(0deg); }     /* 뒤집힘 시작 전 대기 */
+          94%  { transform: translate(0px, -2px) rotate(180deg); }  /* 중간 */
+          100% { transform: translate(0px, 0px) rotate(360deg); }   /* 완료 */
         }
 
 
