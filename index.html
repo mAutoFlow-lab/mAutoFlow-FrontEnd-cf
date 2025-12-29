@@ -1057,8 +1057,13 @@ const HELP_TEXT_HTML = `
 		      <strong>Defined</strong>: analyze the code using the specified macro definitions.
 		      This option affects which branches appear in the flowchart.
 		    </li>
+                    <li>
+		      <strong>Note 1:</strong> If Defined is selected and no macros are provided,
+                      undefined macros may be evaluated as 0 during preprocessing.
+                      This can cause some #if comparison conditions to be interpreted as true.
+		    </li>
 		    <li>
-		      <strong>Note:</strong> The <em>Defined</em> macro mode is available only for
+		      <strong>Note 2:</strong> The <em>Defined</em> macro mode is available only for
 		      <strong>Pro</strong> and <strong>Expert</strong> plans.
 		      Free users will see an upgrade prompt when attempting to use it.
 		    </li>
