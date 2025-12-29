@@ -121,9 +121,9 @@
 
         .logo .logo-letter{
           display: inline-block;
-          position: relative;              /* ✅ left 애니메이션을 위해 */
-          will-change: transform, left;    /* ✅ */
-          left: 0px;                       /* ✅ 기본값 */
+          position: relative;           /* ✅ left 애니메이션 필요 */
+          left: 0px;                    /* ✅ 기본값 */
+          will-change: transform, left; /* ✅ */
           animation-name: logoFloat;
           animation-duration: 2.6s;
           animation-iteration-count: infinite;
@@ -155,6 +155,37 @@
         }
 
         /* ===== Scenario: w move -> snap -> mA spin (1회) ===== */
+
+        /* w는 계속 오른쪽으로 가다가, 뒤집힘 타이밍에 빠르게 복귀 */
+        .logo .w-loop{
+          animation-name: logoFloat, wDriftLoop;
+          animation-duration: 2.6s, 4.8s;                 /* ✅ 4.8s: mA 뒤집힘 주기와 맞춤 */
+          animation-iteration-count: infinite, infinite;  /* ✅ 반복 */
+          animation-timing-function: ease-in-out, ease-in-out;
+        }
+
+        @keyframes wDriftLoop{
+          0%   { left: 0px; }
+          75%  { left: var(--wDriftX, 28px); }   /* 계속 멀어짐 */
+          85%  { left: var(--wDriftX, 28px); }   /* 잠깐 정지(타이밍 맞춤) */
+          100% { left: 0px; }                    /* 빠른 복귀 */
+        }
+
+        /* mA는 뒤집힘 구간에서만 1회 회전(주기 반복) */
+        .logo .ma-loop{
+          animation-name: logoFloat, maSpinLoop;
+          animation-duration: 2.6s, 4.8s;
+          animation-iteration-count: infinite, infinite;
+          animation-timing-function: ease-in-out, ease-in-out;
+        }
+
+        @keyframes maSpinLoop{
+          0%   { transform: translate(0px, 0px) rotate(0deg); }
+          70%  { transform: translate(0px, 0px) rotate(0deg); }
+          85%  { transform: translate(0px, -2px) rotate(180deg); }
+          100% { transform: translate(0px, 0px) rotate(360deg); }
+        }
+
 
         /* mA가 "그 순간"에만 1회 회전 */
         .logo .ma-spin {
@@ -3558,6 +3589,15 @@ const HELP_TEXT_HTML = `
             sp.dataset.ch = ch;
             sp.style.animationDelay = `${i * 0.08}s`;
 
+            // ✅ 시나리오 루프 클래스 부여
+            if (ch === "w") {
+              sp.classList.add("w-loop");
+              sp.style.setProperty("--wDriftX", "28px"); // 원하는 만큼 조절
+            }
+            if (ch === "m" || ch === "A") {
+              sp.classList.add("ma-loop");
+            }
+
             // ✅ flip은 기본에서 제거 (이제 "스냅 순간"에만 ma-spin으로 돌릴 거라서)
             // if (ch === "m" || ch === "A") sp.classList.add("flip");
 
@@ -3626,7 +3666,7 @@ const HELP_TEXT_HTML = `
             const lineNumbers = document.getElementById("lineNumbers");
 
             initAnimatedLogo();   // 로고 span 생성 + 애니메이션 적용
-            runLogoScenario();    // w 이동 → o 스냅 → mA 1회 회전 트리거
+            // runLogoScenario();    // w 이동 → o 스냅 → mA 1회 회전 트리거
 
             // 라인 번호 업데이트 함수
             function updateLineNumbers() {
