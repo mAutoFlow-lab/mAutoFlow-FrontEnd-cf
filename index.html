@@ -150,8 +150,54 @@
           70%  { transform: translate(0px, 0px) rotate(0deg); }
           85%  { transform: translate(0px, -2px) rotate(180deg); }
           100% { transform: translate(0px, 0px) rotate(360deg); }
-        }  
+        }
 
+        /* ===== Scenario: w move -> snap -> mA spin (1회) ===== */
+
+        /* mA가 "그 순간"에만 1회 회전 */
+        .logo .ma-spin {
+          animation-name: logoFloat, maSpinOnce;
+          animation-duration: 2.6s, 0.9s;
+          animation-iteration-count: infinite, 1;
+          animation-timing-function: ease-in-out, ease-in-out;
+        }
+
+        @keyframes maSpinOnce {
+          0%   { transform: translate(0px, 0px) rotate(0deg) scale(1); }
+          40%  { transform: translate(0px, -2px) rotate(140deg) scale(1.06); }
+          100% { transform: translate(0px, 0px) rotate(360deg) scale(1); }
+        }
+
+        /* w가 오른쪽으로 "멀어지는" 단계 */
+        .logo .w-drift {
+          animation-name: logoFloat, wDriftOut;
+          animation-duration: 2.6s, 1.2s;
+          animation-iteration-count: infinite, 1;
+          animation-timing-function: ease-in-out, ease-in-out;
+          animation-fill-mode: none, forwards;
+        }
+
+        /* drift 거리(픽셀)는 JS가 --wDriftX 로 주입 */
+        @keyframes wDriftOut {
+          0%   { transform: translate(0px, 0px) rotate(0deg); }
+          100% { transform: translate(var(--wDriftX, 28px), 0px) rotate(0deg); }
+        }
+
+        /* w가 o 옆으로 "탁" 붙는 단계 (snap) */
+        .logo .w-snap {
+          animation-name: logoFloat, wSnapToO;
+          animation-duration: 2.6s, 120ms;
+          animation-iteration-count: infinite, 1;
+          animation-timing-function: ease-in-out, ease-out;
+          animation-fill-mode: none, forwards;
+        }
+
+        /* snap 목표 위치(픽셀)는 JS가 --wSnapX 로 주입 */
+        @keyframes wSnapToO {
+          0%   { transform: translate(var(--wDriftX, 28px), 0px) rotate(0deg); }
+          100% { transform: translate(var(--wSnapX, 0px), 0px) rotate(0deg); }
+        }
+        
         .main {
             flex: 1;
             display: flex;
@@ -3500,21 +3546,90 @@ const HELP_TEXT_HTML = `
           const text = "mAutoFlow";
           el.innerHTML = "";
 
+          // 전역으로 레퍼런스 저장 (시나리오에서 사용)
+          window.__logoMap = {};
+
           [...text].forEach((ch, i) => {
             const sp = document.createElement("span");
             sp.className = "logo-letter";
             sp.textContent = ch;
+            sp.dataset.ch = ch;
             sp.style.animationDelay = `${i * 0.08}s`;
-            if (ch === "m" || ch === "A") sp.classList.add("flip");
+
+            // ✅ flip은 기본에서 제거 (이제 "스냅 순간"에만 ma-spin으로 돌릴 거라서)
+            // if (ch === "m" || ch === "A") sp.classList.add("flip");
+
             el.appendChild(sp);
+
+            // 같은 글자가 여러 번 나오면 배열로 관리 (o가 2개라서)
+            if (!window.__logoMap[ch]) window.__logoMap[ch] = [];
+            window.__logoMap[ch].push(sp);
           });
         }
+
+
+        function runLogoScenario() {
+          const map = window.__logoMap || {};
+          const m = map["m"]?.[0];
+          const A = map["A"]?.[0];
+          const w = map["w"]?.[0];
+
+          // o는 2개(o, o)니까 "w가 붙을 대상"을 두 번째 o로 잡는 걸 추천
+          // mAutoFlow = m A u t o F l o w
+          //                (첫 o)     (둘째 o) w
+          const o = map["o"]?.[1] || map["o"]?.[0];
+
+          if (!m || !A || !w || !o) return;
+
+          // 1) w가 오른쪽으로 살짝 멀어지게 (드리프트 거리)
+          w.style.setProperty("--wDriftX", "28px");
+
+          // 2) 드리프트 시작
+          w.classList.remove("w-snap");
+          w.classList.add("w-drift");
+
+          // 3) 드리프트가 끝나면: w를 o 옆으로 snap + 그 순간 mA 1회 회전
+          window.setTimeout(() => {
+            // o와 w의 현재 좌표로 "snap 목표 translateX" 계산
+            // 목표: w가 o 바로 오른쪽에 오도록 (간격 2px)
+            const gap = 2;
+
+            const rW = w.getBoundingClientRect();
+            const rO = o.getBoundingClientRect();
+
+            // w의 "현재 위치" 기준으로, o 오른쪽 끝에 맞추는 deltaX
+            const targetLeft = rO.right + gap;
+            const deltaX = targetLeft - rW.left;
+
+            w.style.setProperty("--wSnapX", `${deltaX}px`);
+
+            w.classList.remove("w-drift");
+            w.classList.add("w-snap");
+
+            // mA 1회 회전 트리거
+            m.classList.remove("ma-spin");
+            A.classList.remove("ma-spin");
+            // reflow로 animation 재시작 보장
+            void m.offsetWidth;
+            void A.offsetWidth;
+            m.classList.add("ma-spin");
+            A.classList.add("ma-spin");
+
+            // 1회 회전 끝나면 ma-spin 제거(원하면 유지해도 됨)
+            window.setTimeout(() => {
+              m.classList.remove("ma-spin");
+              A.classList.remove("ma-spin");
+            }, 950);
+          }, 1200);
+        }
+            
 
         document.addEventListener("DOMContentLoaded", async function() {
             const src = document.getElementById("src");
             const lineNumbers = document.getElementById("lineNumbers");
 
             initAnimatedLogo();   // 로고 span 생성 + 애니메이션 적용
+            runLogoScenario();    // w 이동 → o 스냅 → mA 1회 회전 트리거
 
             // 라인 번호 업데이트 함수
             function updateLineNumbers() {
