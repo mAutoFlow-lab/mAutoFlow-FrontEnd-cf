@@ -142,7 +142,7 @@
         /* 특정 글자(예: m, A)에만 가끔 뒤집힘 */
         .logo .flip {
           animation-name: logoFloat, logoFlip;
-          animation-duration: 2.6s, 8s;
+          animation-duration: 2.6s, 4.8s;
           animation-iteration-count: infinite, infinite;
           animation-timing-function: ease-in-out, ease-in-out;
         }
@@ -159,7 +159,7 @@
         /* w는 계속 오른쪽으로 가다가, 뒤집힘 타이밍에 빠르게 복귀 */
         .logo .w-loop{
           animation-name: logoFloat, wDriftLoop;
-          animation-duration: 2.6s, 8s;                 /* ✅ 4.8s: mA 뒤집힘 주기와 맞춤 */
+          animation-duration: 2.6s, 4.8s;                 /* ✅ 4.8s: mA 뒤집힘 주기와 맞춤 */
           animation-iteration-count: infinite, infinite;  /* ✅ 반복 */
           animation-timing-function: ease-in-out, ease-in-out;
         }
@@ -175,7 +175,7 @@
         /* mA는 뒤집힘 구간에서만 1회 회전(주기 반복) */
         .logo .ma-loop{
           animation-name: logoFloat, maSpinLoop;
-          animation-duration: 2.6s, 8s;
+          animation-duration: 2.6s, 4.8s;
           animation-iteration-count: infinite, infinite;
           animation-timing-function: ease-in-out, ease-in-out;
         }
