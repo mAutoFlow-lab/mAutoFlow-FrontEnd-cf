@@ -2033,15 +2033,6 @@ const HELP_TEXT_HTML = `
           }
         }
 
-        // ✅ Defined + 빈 입력이면 "무조건 else만" 타도록 강제
-        function forceElseOnlyPreproc(source) {
-          return (source || "")
-            // #if / #ifdef / #ifndef 라인을 전부 false로
-            .replace(/^[ \t]*#\s*if(n?def)?\b.*$/gm, "#if 0")
-            // #elif 도 전부 false로
-            .replace(/^[ \t]*#\s*elif\b.*$/gm, "#elif 0");
-        }
-
         async function downloadFromServer(format) {
           // format: "png" | "pdf"
           if (!window.currentUser) {
@@ -2075,15 +2066,6 @@ const HELP_TEXT_HTML = `
             return;
           }
 
-          // ✅ Defined인데 입력이 비었으면: 서버 토큰에 의존하지 말고
-          // ✅ 아예 소스를 else-only로 강제 변환해서 보낸다.
-          if (macroMode === "defined") {
-            const v = (macroDefines || "").trim();
-            if (v.length === 0) {
-              src = forceElseOnlyPreproc(src);
-            }
-          }
-
           // 3) macro / branch_shape 동일 전달
           const formData = new FormData();
           formData.append("source_code", src);
@@ -2092,10 +2074,7 @@ const HELP_TEXT_HTML = `
 
           if (macroMode === "defined") {
             const v = (macroDefines || "").trim();
-            // ✅ 입력이 있을 때만 보냄 (빈 입력은 source_code 변환으로 처리)
-            if (v.length > 0) {
-              formData.append("macro_defines", v);
-            }
+            formData.append("macro_defines", v.length > 0 ? v : "__USE_ELSE_ONLY__");
           }
 
           formData.append("access_token", accessToken);
@@ -2895,14 +2874,6 @@ const HELP_TEXT_HTML = `
             setStatus("info", auto ? "Automatically updating the flowchart..." : "Creating the flowchart...");
             chartInner.innerHTML = "";
 
-            // ✅ Defined인데 입력이 비었으면: else-only 강제
-            if (macroMode === "defined") {
-              const v = (macroDefines || "").trim();
-              if (v.length === 0) {
-                src = forceElseOnlyPreproc(src);
-              }
-            }
-
             const formData = new FormData();
             formData.append("source_code", src);
             formData.append("branch_shape", currentBranchShape);
@@ -2911,9 +2882,12 @@ const HELP_TEXT_HTML = `
             // 미니 전처리기용 매크로 정의 문자열 전달
             if (macroMode === "defined") {
               const v = (macroDefines || "").trim();
-              // ✅ 입력이 있을 때만 보냄 (빈 입력은 source_code 변환으로 처리)
               if (v.length > 0) {
                 formData.append("macro_defines", v);
+              } else {
+                // Defined인데 비어있으면: #else 쪽을 타게 해야 함
+                // (백엔드에서 이 값을 special-case로 처리)
+                formData.append("macro_defines", "__USE_ELSE_ONLY__");
               }
             }
                         
