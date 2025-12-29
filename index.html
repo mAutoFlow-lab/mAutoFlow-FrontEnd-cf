@@ -121,7 +121,9 @@
 
         .logo .logo-letter{
           display: inline-block;
-          will-change: transform;
+          position: relative;              /* ✅ left 애니메이션을 위해 */
+          will-change: transform, left;    /* ✅ */
+          left: 0px;                       /* ✅ 기본값 */
           animation-name: logoFloat;
           animation-duration: 2.6s;
           animation-iteration-count: infinite;
@@ -177,10 +179,10 @@
           animation-fill-mode: none, forwards;
         }
 
-        /* drift 거리(픽셀)는 JS가 --wDriftX 로 주입 */
+        /* 변경 (✅ transform 건드리지 않음: logoFloat 유지) */
         @keyframes wDriftOut {
-          0%   { transform: translate(0px, 0px) rotate(0deg); }
-          100% { transform: translate(var(--wDriftX, 28px), 0px) rotate(0deg); }
+          0%   { left: 0px; }
+          100% { left: var(--wDriftX, 28px); }
         }
 
         /* w가 o 옆으로 "탁" 붙는 단계 (snap) */
@@ -194,8 +196,8 @@
 
         /* snap 목표 위치(픽셀)는 JS가 --wSnapX 로 주입 */
         @keyframes wSnapToO {
-          0%   { transform: translate(var(--wDriftX, 28px), 0px) rotate(0deg); }
-          100% { transform: translate(var(--wSnapX, 0px), 0px) rotate(0deg); }
+          0%   { left: var(--wDriftX, 28px); }
+          100% { left: 0px; }   /* ✅ “o 옆”은 원래 자리라서 0으로 복귀 */
         }
         
         .main {
@@ -3589,33 +3591,28 @@ const HELP_TEXT_HTML = `
           w.classList.add("w-drift");
 
           // 3) 드리프트가 끝나면: w를 o 옆으로 snap + 그 순간 mA 1회 회전
+          // 변경 (✅ 좌표 계산 제거 + snap 끝나면 w 상태 정리)
           window.setTimeout(() => {
-            // o와 w의 현재 좌표로 "snap 목표 translateX" 계산
-            // 목표: w가 o 바로 오른쪽에 오도록 (간격 2px)
-            const gap = 2;
-
-            const rW = w.getBoundingClientRect();
-            const rO = o.getBoundingClientRect();
-
-            // w의 "현재 위치" 기준으로, o 오른쪽 끝에 맞추는 deltaX
-            const targetLeft = rO.right + gap;
-            const deltaX = targetLeft - rW.left;
-
-            w.style.setProperty("--wSnapX", `${deltaX}px`);
-
+            // ✅ 이제 snap은 “원래 자리로 복귀(left:0)”만 하면 됨
             w.classList.remove("w-drift");
             w.classList.add("w-snap");
 
             // mA 1회 회전 트리거
             m.classList.remove("ma-spin");
             A.classList.remove("ma-spin");
-            // reflow로 animation 재시작 보장
             void m.offsetWidth;
             void A.offsetWidth;
             m.classList.add("ma-spin");
             A.classList.add("ma-spin");
 
-            // 1회 회전 끝나면 ma-spin 제거(원하면 유지해도 됨)
+            // ✅ snap(120ms) 끝나면 w-snap 제거해서 상태를 깨끗하게 복구
+            window.setTimeout(() => {
+              w.classList.remove("w-snap");
+              // (선택) 혹시 남아있을 inline left 변형이 걱정되면 완전 초기화
+              // w.style.left = "0px";  // 필요 시만
+            }, 160);
+
+            // 1회 회전 끝나면 ma-spin 제거
             window.setTimeout(() => {
               m.classList.remove("ma-spin");
               A.classList.remove("ma-spin");
