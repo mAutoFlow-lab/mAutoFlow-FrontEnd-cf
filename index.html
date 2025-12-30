@@ -218,7 +218,7 @@
         /* 변경 (✅ transform 건드리지 않음: logoFloat 유지) */
         @keyframes wDriftOut {
           0%   { left: 0px; }
-          100% { left: var(--wDriftX, 28px); }
+          100% { left: var(--wDriftX, 70px); }
         }
 
         /* w가 o 옆으로 "탁" 붙는 단계 (snap) */
@@ -232,7 +232,7 @@
 
         /* snap 목표 위치(픽셀)는 JS가 --wSnapX 로 주입 */
         @keyframes wSnapToO {
-          0%   { left: var(--wDriftX, 28px); }
+          0%   { left: var(--wDriftX, 70px); }
           100% { left: 0px; }   /* ✅ “o 옆”은 원래 자리라서 0으로 복귀 */
         }
         
@@ -3617,7 +3617,7 @@ const HELP_TEXT_HTML = `
             // ✅ 시나리오 루프 클래스 부여
             if (ch === "w") {
               sp.classList.add("w-loop");
-              sp.style.setProperty("--wDriftX", "28px"); // 원하는 만큼 조절
+              sp.style.setProperty("--wDriftX", "70px"); // 원하는 만큼 조절
             }
             if (ch === "m" || ch === "A") {
               sp.classList.add("ma-loop");
@@ -3649,7 +3649,7 @@ const HELP_TEXT_HTML = `
           if (!m || !A || !w || !o) return;
 
           // 1) w가 오른쪽으로 살짝 멀어지게 (드리프트 거리)
-          w.style.setProperty("--wDriftX", "28px");
+          w.style.setProperty("--wDriftX", "70px");
 
           // 2) 드리프트 시작
           w.classList.remove("w-snap");
