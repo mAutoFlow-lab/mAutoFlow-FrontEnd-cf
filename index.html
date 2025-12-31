@@ -2095,9 +2095,6 @@ const HELP_TEXT_HTML = `
           formData.append("out_format", format);
           formData.append("branch_shape", currentBranchShape);
 
-          // ✅ All / Defined 모드 자체를 서버에 전달
-          formData.append("macro_mode", macroMode);
-
           if (macroMode === "defined") {
             const v = (macroDefines || "").trim();
             formData.append("macro_defines", v.length > 0 ? v : "__USE_ELSE_ONLY__");
@@ -2904,9 +2901,6 @@ const HELP_TEXT_HTML = `
             formData.append("source_code", src);
             formData.append("branch_shape", currentBranchShape);
             formData.append("func_name_style", funcNameStyle);
-
-            // ✅ All / Defined 모드 자체를 서버에 전달
-            formData.append("macro_mode", macroMode);
 
             // 미니 전처리기용 매크로 정의 문자열 전달
             if (macroMode === "defined") {
