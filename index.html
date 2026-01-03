@@ -674,6 +674,25 @@
             border: 1px solid rgba(148,163,184,0.6);
             background-color: var(--bg-code);
             color: var(--code-text);
+        }
+
+        /* ===============================
+           SETTINGS - Select (dropdown) style
+           =============================== */
+        #settingsContent select,
+        .modal-panel select {
+          border: 1px solid rgba(148,163,184,0.6);
+          border-radius: 4px;
+          background-color: var(--bg-code);
+          color: var(--code-text);
+          padding: 2px 6px;
+        }
+
+        /* 드롭다운 펼쳤을 때 option도 다크로 */
+        #settingsContent option,
+        .modal-panel option {
+          background-color: var(--bg-code);
+          color: var(--code-text);
         }           
       
     </style>
