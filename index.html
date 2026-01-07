@@ -97,7 +97,8 @@
             color: var(--header-text);    /* ← 변경 */
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: flex-start;   /* ✅ 왼쪽부터 쌓기 */
+            gap: 10px;                     /* (선택) 로고-버튼 간격 */
         }
         header h1 {
             margin: 0;
@@ -459,7 +460,7 @@
             opacity: 0.9;
             flex-wrap: nowrap;    /* 버튼 줄바꿈 방지 */
             white-space: nowrap;  /* 텍스트 줄바꿈 방지 */
-            flex: 1;   /* ✅ 추가: 헤더에서 오른쪽 영역이 남는 폭을 다 먹게 함 */
+            margin-left: auto;   /* ✅ 오른쪽으로 밀어붙임(로고 안 밀림) */
         }
 
         .btn-settings {
@@ -4176,7 +4177,7 @@ const HELP_TEXT_HTML = `
         <!-- 오른쪽 상단 메뉴: 로그인 + 버튼 + 백엔드 버전 -->
         <div class="topbar-right">
             <!-- ✅ Legal nav (박스 버튼): Welcome "앞(왼쪽)"으로 이동 -->
-            <div id="legalNav" style="display:inline-flex; gap:4px; margin-right:auto;">
+            div id="legalNav" style="display:flex; gap:8px;">
               <button class="btn-settings" onclick="return navigateTo('/pricing', event)">PRICING</button>
               <button class="btn-settings" onclick="return navigateTo('/terms-of-service', event)">TERMS</button>
               <button class="btn-settings" onclick="return navigateTo('/privacy-policy', event)">PRIVACY</button>
@@ -4184,7 +4185,7 @@ const HELP_TEXT_HTML = `
 
             <!-- ✅ EDIT(복귀) 버튼 -->
             <button id="editButton" class="btn-settings" style="display:none;" onclick="goBackToEditor()">
-              EDIT
+              GET STARTED
             </button>
 
             <!-- 로그인 영역 -->
