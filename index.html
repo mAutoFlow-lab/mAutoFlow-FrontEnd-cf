@@ -1942,6 +1942,13 @@ const HELP_TEXT_HTML = `
           const paneHeader = document.querySelector("#rightPane .pane-header");
           if (paneHeader) paneHeader.style.display = "none";
 
+          // ✅ legal 진입 시: pending debounce 제거 + legal 모드 플래그 ON
+          window.__isLegalMode = true;
+          if (typeof typingTimer !== "undefined" && typingTimer) {
+            clearTimeout(typingTimer);
+            typingTimer = null;
+          }  
+
           // 좌측 편집기/디바이더 숨겨서 문서에 집중
           const src = document.getElementById("src");
           if (src) src.disabled = true;
@@ -2006,6 +2013,9 @@ const HELP_TEXT_HTML = `
 
           const chartInner = document.getElementById("chartInner");
           if (chartInner) chartInner.style.margin = "";
+
+          // ✅ editor 복귀 시: legal 모드 OFF
+          window.__isLegalMode = false;
 
           // ✅ EDIT 버튼은 편집 화면에선 숨김
           const editBtn = document.getElementById("editButton");
@@ -3405,6 +3415,9 @@ const HELP_TEXT_HTML = `
         }
 
         async function generateFlowchart(auto = false) {
+            // ✅ legal 문서 페이지에서는 차트 생성이 문서를 덮어쓰지 않도록 막기
+            if (window.__isLegalMode) return;
+              
             const status      = document.getElementById("status");
             const chartInner  = document.getElementById("chartInner");
             const currentFunc = document.getElementById("currentFunc");
