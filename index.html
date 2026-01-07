@@ -1894,6 +1894,8 @@ const HELP_TEXT_HTML = `
           hide('button[onclick="toggleHelp()"]');      // helpToggleBtn
           hide("#helpToggleBtn");
           hide('button[onclick="openProCheckout()"]'); // upgrade
+          hide("#legalNav");
+          hide("#editButton");
 
           // regenerate/toolbar도 숨기면 “문서 페이지” 느낌이 깔끔함
           const toolbar = document.getElementById("toolbar");
@@ -1917,6 +1919,58 @@ const HELP_TEXT_HTML = `
             rightPane.style.padding = "10px";
           }
         }
+
+        function restoreAppViewMode() {
+          // 숨겼던 것들 다시 보이기
+          const show = (sel) => {
+            const el = document.querySelector(sel);
+            if (el) el.style.display = "";
+          };
+
+          // 앱 기능 버튼들 원복
+          show('button[onclick="openShare()"]');
+          show('button[onclick="downloadDiagram()"]');
+          show('button[onclick="openSettings()"]');
+          show('button[onclick="toggleHelp()"]');
+          show("#helpToggleBtn");
+          show('button[onclick="openProCheckout()"]');
+
+          // toolbar/좌측/디바이더 원복
+          const toolbar = document.getElementById("toolbar");
+          if (toolbar) toolbar.style.display = "";
+
+          const leftPane = document.getElementById("leftPane");
+          if (leftPane) leftPane.style.display = "";
+
+          const divider = document.getElementById("divider");
+          if (divider) divider.style.display = "";
+
+          const src = document.getElementById("src");
+          if (src) src.disabled = false;
+
+          const rightPane = document.getElementById("rightPane");
+          if (rightPane) {
+            rightPane.style.flex = "";
+            rightPane.style.minWidth = "";
+            rightPane.style.width = "";
+            rightPane.style.padding = "";
+          }
+
+          const chartInner = document.getElementById("chartInner");
+          if (chartInner) chartInner.style.margin = "";
+
+          // ✅ EDIT 버튼은 편집 화면에선 숨김
+          const editBtn = document.getElementById("editButton");
+          if (editBtn) editBtn.style.display = "none";
+        }
+
+        function goBackToEditor() {
+          // 뒤로갈 히스토리가 있으면 back, 없으면 루트로
+          if (window.history.length > 1) window.history.back();
+          else navigateTo("/", null);
+        }
+
+        
 
         const PRICING_HTML = `
           <div class="legal-doc">
@@ -1957,17 +2011,22 @@ const HELP_TEXT_HTML = `
         }
 
         function handleRoute() {
-          // 1) share 우선 (기존 흐름 유지)
+          // 1) share 우선
           const shareId = getShareIdFromPath();
-          if (shareId) return; // 기존 DOMContentLoaded 분기에서 처리하니까 여기선 건드리지 않음
+          if (shareId) return;
 
           // 2) legal 라우트
           const legal = getLegalPath();
           if (legal) {
             applyLegalViewMode();
             renderLegalDoc(legal);
+            return;
           }
+
+          // 3) 그 외(= 편집 메인 화면) -> 원복
+          restoreAppViewMode();
         }
+
 
 
         // ============================
@@ -4113,13 +4172,6 @@ const HELP_TEXT_HTML = `
             <h1 id="logo" class="logo" aria-label="mAutoFlow"></h1>
         </div>
 
-        <!-- ✅ 추가: 상단 nav -->
-        <nav class="topnav" aria-label="Primary">
-          <a href="/pricing" onclick="return navigateTo('/pricing', event)">Pricing</a>
-          <a href="/terms-of-service" onclick="return navigateTo('/terms-of-service', event)">Terms</a>
-          <a href="/privacy-policy" onclick="return navigateTo('/privacy-policy', event)">Privacy</a>
-        </nav>
-
         <!-- 오른쪽 상단 메뉴: 로그인 + 버튼 + 백엔드 버전 -->
         <div class="topbar-right">
             <!-- 로그인 영역 -->
@@ -4134,6 +4186,18 @@ const HELP_TEXT_HTML = `
             </div>
             <!-- 로그인 영역 끝 -->
 
+            <!-- ✅ Legal nav (박스 버튼) -->
+            <div id="legalNav" style="display:inline-flex; gap:4px; margin-right:8px;">
+              <button class="btn-settings" onclick="return navigateTo('/pricing', event)">PRICING</button>
+              <button class="btn-settings" onclick="return navigateTo('/terms-of-service', event)">TERMS</button>
+              <button class="btn-settings" onclick="return navigateTo('/privacy-policy', event)">PRIVACY</button>
+            </div>
+
+            <!-- ✅ EDIT(복귀) 버튼: 기본은 숨김, legal 페이지에서만 표시 -->
+            <button id="editButton" class="btn-settings" style="display:none;" onclick="goBackToEditor()">
+              EDIT
+            </button>
+
             <!-- 기능 버튼들 -->
             <button id="upgradeButton"
                     class="btn-settings"
@@ -4142,8 +4206,7 @@ const HELP_TEXT_HTML = `
             </button>
 
             <!-- DOWNLOAD 왼쪽 -->
-            <button class="btn-settings" onclick="openShare()">SHARE</button>
-            
+            <button class="btn-settings" onclick="openShare()">SHARE</button>            
             <button class="btn-settings" onclick="downloadDiagram()">DOWNLOAD</button>         
             <button class="btn-settings" onclick="openSettings()">SETTINGS</button>
             <button id="helpToggleBtn" class="btn-settings" onclick="toggleHelp()">HELP</button>
