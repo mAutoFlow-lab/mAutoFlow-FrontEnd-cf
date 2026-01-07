@@ -1931,6 +1931,10 @@ const HELP_TEXT_HTML = `
           const toolbar = document.getElementById("toolbar");
           if (toolbar) toolbar.style.display = "none";
 
+          // ✅ Flowchart 라벨 + 줌 컨트롤 숨기기
+          const paneHeader = document.querySelector("#rightPane .pane-header");
+          if (paneHeader) paneHeader.style.display = "none";
+
           // 좌측 편집기/디바이더 숨겨서 문서에 집중
           const src = document.getElementById("src");
           if (src) src.disabled = true;
@@ -1967,6 +1971,10 @@ const HELP_TEXT_HTML = `
 
           // ✅ legalNav 원복(이게 빠져서 legal 다녀오면 버튼 3개가 사라졌던 것)
           show("#legalNav");
+
+            // ✅ legal에서 숨겼던 Flowchart 라벨 + 줌 컨트롤 복구
+          const paneHeader = document.querySelector("#rightPane .pane-header");
+          if (paneHeader) paneHeader.style.display = "";
 
           // toolbar/좌측/디바이더 원복
           const toolbar = document.getElementById("toolbar");
@@ -4495,6 +4503,10 @@ void main(void)
                 welcomeText.textContent = user.email
                     ? `Welcome, ${user.email}`
                     : "Welcome!";
+
+                // ✅ 로그인 성공 시, 예전에 남아있던 "Please log in..." 같은 에러 문구 제거
+                setStatus("idle", ""); // 또는 setStatus("success", "")는 아이콘 생겨서 비추
+                
                 loggedOutDiv.style.display = "none";
                 loggedInDiv.style.display  = "inline-flex";
 
