@@ -1183,7 +1183,7 @@ const HELP_TEXT_HTML = `
           <ul>
             <li><strong>“Unexpected error” even when Network shows 200</strong>:
               <ul>
-                <li>This is usually a <em>response parsing</em> issue or a <em>Mermaid rendering</em> exception.</li>
+                <li>This is usually a <em>response parsing</em> issue or a <em>rendering</em> exception.</li>
                 <li>Try regenerating once, or simplify the function temporarily.</li>
               </ul>
             </li>
@@ -2181,7 +2181,12 @@ const HELP_TEXT_HTML = `
             </div>
 
             <h2>1. Service Description</h2>
-            <p>mAutoFlow provides an automated tool that analyzes user-submitted code or text and generates flowcharts. Outputs are provided “as is” for visualization purposes, and you are responsible for reviewing and validating results.</p>
+            <p>mAutoFlow provides an automated tool that analyzes user-submitted code or text and generates visual flowcharts for reference purposes. Outputs are provided “as is” for visualization purposes, and you are responsible for reviewing and validating results.</p>
+            <p>
+            The service does not provide professional, legal, or technical advice.
+            All outputs are generated automatically and are provided for informational
+            and visualization purposes only.
+            </p>
 
             <h2>2. Accounts and Acceptable Use</h2>
             <ul>
@@ -2197,6 +2202,11 @@ const HELP_TEXT_HTML = `
               <li>Subscriptions <b>renew automatically</b> unless canceled prior to the renewal date.</li>
               <li>Taxes (such as VAT) may be displayed during checkout depending on your location and applicable rules.</li>
             </ul>
+            <p>
+            Payments and subscription management are handled by Lemon Squeezy.
+            Refunds, cancellations, and billing issues are subject to Lemon Squeezy’s
+            terms and policies.
+            </p>                   
 
             <h2>4. Cancellation and Refunds</h2>
             <ul>
@@ -2213,10 +2223,27 @@ const HELP_TEXT_HTML = `
 
             <h2>6. Disclaimer</h2>
             <p>The service is provided “as is” without warranties of any kind. mAutoFlow does not guarantee the accuracy, completeness, or suitability of generated outputs. To the maximum extent permitted by law, liability is limited.</p>
+            
+            <h2>7. Limitation of Liability</h2>
+            <p>
+            To the maximum extent permitted by applicable law, mAutoFlow shall not be liable
+            for any indirect, incidental, special, consequential, or punitive damages,
+            including but not limited to loss of data, loss of profits, or business interruption,
+            arising out of or related to the use of the service.
+            </p>
 
-            <h2>7. Governing Law and Jurisdiction</h2>
-            <p>These terms are governed by the laws of the <b>Republic of Korea</b>. Any disputes shall be subject to the jurisdiction of the competent courts in the Republic of Korea, unless mandatory law provides otherwise.</p>
+            <h2>8. Service Availability and Changes</h2>
+            <p>
+            We reserve the right to modify, suspend, or discontinue any part of the service
+            at any time, with or without prior notice.
+            </p>
 
+            <h2>9. Governing Law</h2>
+            <p>
+            These terms shall be governed by and construed in accordance with applicable laws,
+            without regard to conflict of law principles.
+            </p>
+                               
             <p class="muted" style="margin-top:22px;">※ These terms may be updated as the service or legal requirements change.</p>
           </div>
         </div>
@@ -2271,12 +2298,24 @@ const HELP_TEXT_HTML = `
               <li>Improve service stability, prevent abuse, and enhance security</li>
               <li>Respond to inquiries and provide customer support</li>
             </ul>
+            <p>
+            We process personal data based on contractual necessity (to provide the service)
+            and legitimate interests related to service operation, security, and billing.
+            </p>
 
             <h2>3. Code Processing Policy</h2>
             <p>Submitted code/text is processed only to generate flowcharts and provide the service. We do not use submitted code for training machine learning models.</p>
 
             <h2>4. Third-Party Services and International Transfers</h2>
+            <p>
+            Subscription payments, cancellations, and refunds are processed by Lemon Squeezy.
+            mAutoFlow does not store payment method details and does not directly handle refunds.
+            </p>                   
             <p class="muted">To operate the service, some personal data may be processed by third-party providers. Depending on your location, this may involve international data transfers.</p>
+            <p>
+            mAutoFlow does not use advertising cookies or third-party tracking technologies
+            for marketing or profiling purposes.
+            </p>
 
             <table>
               <tr><th>Service</th><td><b>Supabase</b></td></tr>
@@ -2305,6 +2344,11 @@ const HELP_TEXT_HTML = `
               <li>You may request access, correction, deletion, or restriction of processing of your personal data.</li>
               <li>To exercise your rights, contact: <b>mautoflow.lab@gmail.com</b></li>
             </ul>
+            <p>
+            If you are located in the European Union, you have the right to request access to,
+            rectification of, restriction of processing of, or deletion of your personal data,
+            in accordance with applicable data protection laws.
+            </p>
 
             <h2>7. Contact</h2>
             <p>For privacy-related inquiries, contact: <b>mautoflow.lab@gmail.com</b></p>
