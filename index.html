@@ -2018,29 +2018,114 @@ const HELP_TEXT_HTML = `
         
 
         const PRICING_HTML = `
-          <div class="legal-doc">
-            <h2>Pricing</h2>
-            <p>여기에 네 실제 가격정책 표/문구를 넣으면 됨.</p>
-            <ul>
-              <li><strong>Free</strong>: 일 5회 + 노드 20 제한</li>
-              <li><strong>Pro</strong>: 무제한 다이어그램 + 노드 상향</li>
-              <li><strong>Expert</strong>: 무제한 + 최고 노드</li>
-            </ul>
-          </div>
-        `;
+        <div class="legal-doc pricing-doc">
+          <style>
+            .legal-doc{ font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+            .legal-doc .container{ max-width: 920px; margin: 0 auto; padding: 24px 20px 30px; }
+            .legal-doc h1{ font-size: 36px; margin: 6px 0 6px; text-align:center; }
+            .legal-doc .sub{ text-align:center; color:#6b7280; margin: 0 0 18px; }
+            .legal-doc .grid{ display:flex; flex-direction:column; gap: 16px; margin-top: 18px; }
 
-        const TERMS_HTML = `
-          <div class="legal-doc">
-            <h2>Terms of Service</h2>
-            <p>여기에 약관 내용을 넣어줘.</p>
-          </div>
-        `;
+            .legal-doc .plan{ border: 1px solid #d1d5db; border-radius: 14px; overflow: hidden; background: #fff; }
+            .legal-doc .plan.selected{ border: 2px solid #7c3aed; box-shadow: 0 0 0 3px rgba(124,58,237,0.10); }
 
-        const PRIVACY_HTML = `
-          <div class="legal-doc">
-            <h2>Privacy Policy</h2>
-            <p>여기에 개인정보 처리방침 내용을 넣어줘.</p>
+            .legal-doc .plan-header{ display:flex; align-items:center; justify-content:space-between; padding: 14px 16px; border-bottom: 1px solid #e5e7eb; }
+            .legal-doc .left{ display:flex; align-items:center; gap: 12px; }
+            .legal-doc .radio{ width: 18px; height: 18px; border-radius: 50%; border: 2px solid #9ca3af; position: relative; }
+            .legal-doc .plan.selected .radio{ border-color:#7c3aed; }
+            .legal-doc .plan.selected .radio::after{
+              content:""; width: 8px; height: 8px; border-radius: 50%;
+              background:#7c3aed; position:absolute; left:50%; top:50%;
+              transform: translate(-50%,-50%);
+            }
+
+            .legal-doc .title{ font-size: 20px; font-weight: 700; }
+            .legal-doc .price{ font-size: 20px; font-weight: 800; }
+
+            .legal-doc .plan-body{ padding: 14px 16px 18px; }
+            .legal-doc .bill{ color:#6b7280; font-size: 14px; margin-bottom: 10px; }
+            .legal-doc .desc{ margin-bottom: 12px; line-height: 1.6; }
+            .legal-doc ul{ margin-left: 18px; line-height: 1.7; }
+
+            .legal-doc .footbox{
+              margin-top: 18px; border: 1px solid #e5e7eb;
+              border-radius: 12px; padding: 14px 16px;
+              background: #fafafa; font-size: 13px; color:#374151;
+            }
+          </style>
+
+          <div class="container">
+            <h1>Pricing</h1>
+            <p class="sub">Choose the plan that fits your needs. Monthly subscription only.</p>
+
+            <div class="grid">
+              <section class="plan selected">
+                <div class="plan-header">
+                  <div class="left">
+                    <div class="radio"></div>
+                    <div class="title">Lite</div>
+                  </div>
+                  <div class="price">US$0.00</div>
+                </div>
+                <div class="plan-body">
+                  <p class="bill">Billed monthly: US$0.00</p>
+                  <p class="desc"><b>mAutoFlow Lite</b> provides basic flowchart generation features.</p>
+                  <ul>
+                    <li>Up to <b>5</b> flowcharts per day</li>
+                    <li>Up to <b>20</b> nodes per flowchart</li>
+                    <li>Access to Help</li>
+                  </ul>
+                </div>
+              </section>
+
+              <section class="plan">
+                <div class="plan-header">
+                  <div class="left">
+                    <div class="radio"></div>
+                    <div class="title">Pro</div>
+                  </div>
+                  <div class="price">US$9.99</div>
+                </div>
+                <div class="plan-body">
+                  <p class="bill">Billed monthly: US$9.99</p>
+                  <p class="desc"><b>mAutoFlow Pro</b> unlocks advanced flowchart creation.</p>
+                  <ul>
+                    <li>Unlimited flowchart generation</li>
+                    <li>Up to <b>200</b> nodes per flowchart</li>
+                    <li>Macro-based process definitions</li>
+                    <li>Help support</li>
+                  </ul>
+                </div>
+              </section>
+
+              <section class="plan">
+                <div class="plan-header">
+                  <div class="left">
+                    <div class="radio"></div>
+                    <div class="title">Expert</div>
+                  </div>
+                  <div class="price">US$15.00</div>
+                </div>
+                <div class="plan-body">
+                  <p class="bill">Billed monthly: US$15.00</p>
+                  <p class="desc"><b>mAutoFlow Expert</b> supports large-scale and complex diagrams.</p>
+                  <ul>
+                    <li>Unlimited flowchart generation</li>
+                    <li>Up to <b>1,000</b> nodes per flowchart</li>
+                    <li>Advanced macro processing</li>
+                    <li>Priority feature access</li>
+                  </ul>
+                </div>
+              </section>
+            </div>
+
+            <div class="footbox">
+              • All paid plans are billed monthly via <b>Lemon Squeezy</b>.<br/>
+              • Subscriptions renew automatically until canceled.<br/>
+              • Refunds may be limited due to the nature of digital services.
+            </div>
           </div>
+        </div>
         `;
 
         function renderLegalDoc(kind) {
