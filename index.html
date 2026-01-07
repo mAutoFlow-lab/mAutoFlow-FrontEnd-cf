@@ -1875,7 +1875,14 @@ const HELP_TEXT_HTML = `
         let __returnToEditorPath = "/";
 
         function isLegalPath(pathname) {
-          return pathname === "/pricing" || pathname === "/terms" || pathname === "/privacy";
+          return (
+            pathname === "/pricing" ||
+            pathname === "/terms-of-service" ||
+            pathname === "/privacy-policy" ||
+            // 이전 경로 호환 (남겨둬도 무방)
+            pathname === "/terms" ||
+            pathname === "/privacy"
+          );
         }
 
 
@@ -2133,11 +2140,11 @@ const HELP_TEXT_HTML = `
           <style>
             .legal-doc{ font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
             .legal-doc .container{ max-width: 920px; margin: 0 auto; padding: 24px 20px 30px; }
-            .legal-doc h1{ font-size: 34px; text-align:center; margin-bottom: 10px; }
+            .legal-doc h1{ font-size: 34px; text-align:left; margin-bottom: 10px; }
             .legal-doc h2{ margin-top: 22px; font-size: 18px; }
             .legal-doc p, .legal-doc li{ line-height: 1.7; }
             .legal-doc ul{ margin-left: 20px; }
-            .legal-doc .meta{ text-align:center; color:#6b7280; font-size: 13px; margin-bottom: 18px; }
+            .legal-doc .meta{ text-align:left; color:#6b7280; font-size: 13px; margin-bottom: 18px; }
           </style>
 
           <div class="container">
@@ -2196,14 +2203,14 @@ const HELP_TEXT_HTML = `
           <style>
             .legal-doc{ font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
             .legal-doc .container{ max-width: 980px; margin: 0 auto; padding: 24px 20px 30px; }
-            .legal-doc h1{ font-size: 34px; text-align:center; margin-bottom: 10px; }
+            .legal-doc h1{ font-size: 34px; text-align:left; margin-bottom: 10px; }
             .legal-doc h2{ margin-top: 22px; font-size: 18px; }
             .legal-doc p, .legal-doc li{ line-height: 1.7; }
             .legal-doc ul{ margin-left: 20px; }
             .legal-doc table{ width:100%; border-collapse: collapse; margin-top: 12px; font-size: 13px; }
             .legal-doc th, .legal-doc td{ border: 1px solid #e5e7eb; padding: 10px; vertical-align: top; }
             .legal-doc th{ background:#f9fafb; text-align:left; width: 20%; }
-            .legal-doc .meta{ text-align:center; color:#6b7280; font-size: 13px; margin-bottom: 18px; }
+            .legal-doc .meta{ text-align:left; color:#6b7280; font-size: 13px; margin-bottom: 18px; }
           </style>
 
           <div class="container">
@@ -2279,7 +2286,26 @@ const HELP_TEXT_HTML = `
           else if (kind === "privacy") html = PRIVACY_HTML;
 
           chartInner.innerHTML = html;
+
+          // 🔹 PRICING일 때만 선택 로직 연결
+          if (kind === "pricing") initPricingPlanSelection();
         }
+
+        function initPricingPlanSelection() {
+          const pricing = document.querySelector(".pricing-doc");
+          if (!pricing) return;
+
+          const plans = pricing.querySelectorAll(".plan");
+
+          plans.forEach(plan => {
+            plan.addEventListener("click", () => {
+              plans.forEach(p => p.classList.remove("selected"));
+              plan.classList.add("selected");
+            });
+          });
+        }
+
+
 
         function handleRoute() {
           // 1) share 우선
