@@ -708,6 +708,25 @@
         .modal-panel select:focus {
           outline: none;
           box-shadow: 0 0 0 2px rgba(34,197,94,0.35); /* 기존 그린 톤에 맞춤 */
+        }
+
+        .topnav{
+          display:flex;
+          gap:14px;
+          align-items:center;
+          margin-left: 10px;
+          margin-right: 16px;
+        }
+        .topnav a{
+          color: rgba(226,232,240,0.95);
+          text-decoration:none;
+          font-weight:600;
+          font-size:13px;
+          opacity:0.9;
+        }
+        .topnav a:hover{
+          opacity:1;
+          text-decoration: underline;
         }           
       
     </style>
@@ -1182,6 +1201,32 @@ const HELP_TEXT_HTML = `
               mautoflow.lab@gmail.com
             </a>
           </p>
+          <h3>16. Pricing Information</h3>
+          <ul>
+            <li>
+              <a href="/pricing" class="help-link" onclick="return navigateTo('/pricing', event)">
+                Open Pricing page
+              </a>
+            </li>
+          </ul>
+
+          <h3>17. Terms of Service</h3>
+          <ul>
+            <li>
+              <a href="/terms-of-service" class="help-link" onclick="return navigateTo('/terms-of-service', event)">
+                Open Terms of Service page
+              </a>
+            </li>
+          </ul>
+
+          <h3>18. Privacy Policy</h3>
+          <ul>
+            <li>
+              <a href="/privacy-policy" class="help-link" onclick="return navigateTo('/privacy-policy', event)">
+                Open Privacy Policy page
+              </a>
+            </li>
+          </ul>
         `;
 	
    
@@ -1812,6 +1857,116 @@ const HELP_TEXT_HTML = `
 
           const chartInner = document.getElementById("chartInner");
           if (chartInner) chartInner.style.margin = "0";
+        }
+
+
+        // ============================
+        //  LEGAL 페이지 라우팅 (/pricing, /terms-of-service, /privacy-policy)
+        // ============================
+        function getLegalPath() {
+          const p = window.location.pathname.replace(/\/+$/, "") || "/";
+          if (p === "/pricing") return "pricing";
+          if (p === "/terms-of-service") return "terms";
+          if (p === "/privacy-policy") return "privacy";
+          return null;
+        }
+
+        function navigateTo(path, e) {
+          if (e) e.preventDefault();
+          history.pushState({}, "", path);
+          handleRoute();
+          return false;
+        }
+
+        window.addEventListener("popstate", handleRoute);
+
+        function applyLegalViewMode() {
+          // ✅ 공유페이지에서 쓰던 hide 패턴 그대로 재사용 (applyShareViewMode 참고) :contentReference[oaicite:7]{index=7}
+          const hide = (sel) => {
+            const el = document.querySelector(sel);
+            if (el) el.style.display = "none";
+          };
+
+          // 앱 기능 버튼 숨김(요구사항 3)
+          hide('button[onclick="openShare()"]');
+          hide('button[onclick="downloadDiagram()"]');
+          hide('button[onclick="openSettings()"]');
+          hide('button[onclick="toggleHelp()"]');      // helpToggleBtn
+          hide("#helpToggleBtn");
+          hide('button[onclick="openProCheckout()"]'); // upgrade
+
+          // regenerate/toolbar도 숨기면 “문서 페이지” 느낌이 깔끔함
+          const toolbar = document.getElementById("toolbar");
+          if (toolbar) toolbar.style.display = "none";
+
+          // 좌측 편집기/디바이더 숨겨서 문서에 집중
+          const src = document.getElementById("src");
+          if (src) src.disabled = true;
+
+          const leftPane = document.getElementById("leftPane");
+          if (leftPane) leftPane.style.display = "none";
+
+          const divider = document.getElementById("divider");
+          if (divider) divider.style.display = "none";
+
+          const rightPane = document.getElementById("rightPane");
+          if (rightPane) {
+            rightPane.style.flex = "1 1 100%";
+            rightPane.style.minWidth = "0";
+            rightPane.style.width = "100%";
+            rightPane.style.padding = "10px";
+          }
+        }
+
+        const PRICING_HTML = `
+          <div class="legal-doc">
+            <h2>Pricing</h2>
+            <p>여기에 네 실제 가격정책 표/문구를 넣으면 됨.</p>
+            <ul>
+              <li><strong>Free</strong>: 일 5회 + 노드 20 제한</li>
+              <li><strong>Pro</strong>: 무제한 다이어그램 + 노드 상향</li>
+              <li><strong>Expert</strong>: 무제한 + 최고 노드</li>
+            </ul>
+          </div>
+        `;
+
+        const TERMS_HTML = `
+          <div class="legal-doc">
+            <h2>Terms of Service</h2>
+            <p>여기에 약관 내용을 넣어줘.</p>
+          </div>
+        `;
+
+        const PRIVACY_HTML = `
+          <div class="legal-doc">
+            <h2>Privacy Policy</h2>
+            <p>여기에 개인정보 처리방침 내용을 넣어줘.</p>
+          </div>
+        `;
+
+        function renderLegalDoc(kind) {
+          const chartInner = document.getElementById("chartInner");
+          if (!chartInner) return;
+
+          let html = "";
+          if (kind === "pricing") html = PRICING_HTML;
+          else if (kind === "terms") html = TERMS_HTML;
+          else if (kind === "privacy") html = PRIVACY_HTML;
+
+          chartInner.innerHTML = html;
+        }
+
+        function handleRoute() {
+          // 1) share 우선 (기존 흐름 유지)
+          const shareId = getShareIdFromPath();
+          if (shareId) return; // 기존 DOMContentLoaded 분기에서 처리하니까 여기선 건드리지 않음
+
+          // 2) legal 라우트
+          const legal = getLegalPath();
+          if (legal) {
+            applyLegalViewMode();
+            renderLegalDoc(legal);
+          }
         }
 
 
@@ -3759,6 +3914,15 @@ const HELP_TEXT_HTML = `
                 return; // 공유 페이지에서는 일반 초기 플로우차트 생성 흐름을 타지 않게 종료
             }
 
+            // ✅ 추가: legal 페이지 진입 처리
+            const legal = getLegalPath();
+            if (legal) {
+              applyLegalViewMode();
+              renderLegalDoc(legal);
+              return;
+            }
+            
+
             // SETTINGS 라디오들 초기화 (기본은 모달 DOM 기준)
             initSettingsRadios(document);
 
@@ -3948,6 +4112,13 @@ const HELP_TEXT_HTML = `
         <div>
             <h1 id="logo" class="logo" aria-label="mAutoFlow"></h1>
         </div>
+
+        <!-- ✅ 추가: 상단 nav -->
+        <nav class="topnav" aria-label="Primary">
+          <a href="/pricing" onclick="return navigateTo('/pricing', event)">Pricing</a>
+          <a href="/terms-of-service" onclick="return navigateTo('/terms-of-service', event)">Terms</a>
+          <a href="/privacy-policy" onclick="return navigateTo('/privacy-policy', event)">Privacy</a>
+        </nav>
 
         <!-- 오른쪽 상단 메뉴: 로그인 + 버튼 + 백엔드 버전 -->
         <div class="topbar-right">
