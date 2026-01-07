@@ -2038,37 +2038,32 @@ const HELP_TEXT_HTML = `
         <div class="legal-doc pricing-doc">
           <style>
             .legal-doc{ font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
-            .legal-doc .container{ max-width: 920px; margin: 0 auto; padding: 24px 20px 30px; text-align: left; }
+            .legal-doc .container{ max-width: 920px; margin: 0 auto; padding: 24px 20px 30px; }
             .legal-doc h1{ font-size: 36px; margin: 6px 0 6px; text-align:left; }
             .legal-doc .sub{ text-align:left; color:#6b7280; margin: 0 0 18px; }
+            .legal-doc .note{ margin: 10px auto 0; max-width: 720px; font-size: 13px; color:#6b7280; line-height:1.5; }
             .legal-doc .grid{ display:flex; flex-direction:column; gap: 16px; margin-top: 18px; }
 
             .legal-doc .plan{ border: 1px solid #d1d5db; border-radius: 14px; overflow: hidden; background: #fff; }
             .legal-doc .plan.selected{ border: 2px solid #7c3aed; box-shadow: 0 0 0 3px rgba(124,58,237,0.10); }
 
             .legal-doc .plan-header{ display:flex; align-items:center; justify-content:space-between; padding: 14px 16px; border-bottom: 1px solid #e5e7eb; }
-            .legal-doc .left{ display:flex; align-items:center; gap: 12px; }
-            .legal-doc .radio{ width: 18px; height: 18px; border-radius: 50%; border: 2px solid #9ca3af; position: relative; }
-            .legal-doc .plan.selected .radio{ border-color:#7c3aed; }
-            .legal-doc .plan.selected .radio::after{
-              content:""; width: 8px; height: 8px; border-radius: 50%;
-              background:#7c3aed; position:absolute; left:50%; top:50%;
-              transform: translate(-50%,-50%);
-            }
-
+            .legal-doc .left{ display:flex; align-items:center; gap: 12px; min-width: 0; }
+            .legal-doc .radio{ width: 18px; height: 18px; border-radius: 999px; border: 2px solid #9ca3af; position: relative; }
+            .legal-doc .plan.selected .radio{ border-color: #7c3aed; }
+            .legal-doc .plan.selected .radio::after{ content:""; width: 8px; height: 8px; border-radius: 999px; background:#7c3aed; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); }
             .legal-doc .title{ font-size: 20px; font-weight: 700; }
             .legal-doc .price{ font-size: 20px; font-weight: 800; }
 
             .legal-doc .plan-body{ padding: 14px 16px 18px; }
-            .legal-doc .bill{ color:#6b7280; font-size: 14px; margin-bottom: 10px; }
-            .legal-doc .desc{ margin-bottom: 12px; line-height: 1.6; }
-            .legal-doc ul{ margin-left: 18px; line-height: 1.7; }
+            .legal-doc .bill{ color:#6b7280; font-size: 14px; margin: 0 0 10px; }
+            .legal-doc .desc{ margin: 6px 0 12px; line-height: 1.65; color:#111827; }
+            .legal-doc ul{ margin: 10px 0 0 18px; padding: 0; line-height: 1.75; }
+            .legal-doc li{ margin: 4px 0; }
+            .legal-doc .muted{ color:#6b7280; }
 
-            .legal-doc .footbox{
-              margin-top: 18px; border: 1px solid #e5e7eb;
-              border-radius: 12px; padding: 14px 16px;
-              background: #fafafa; font-size: 13px; color:#374151;
-            }
+            .legal-doc .footbox{ margin-top: 18px; border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px 16px; background: #fafafa; color:#374151; font-size: 13px; line-height:1.6; }
+            .legal-doc .footbox b{ color:#111827; }
           </style>
 
           <div class="container">
@@ -2129,17 +2124,20 @@ const HELP_TEXT_HTML = `
                   <ul>
                     <li>Unlimited flowchart generation</li>
                     <li>Up to <b>1,000</b> nodes per flowchart</li>
-                    <li>Advanced macro processing</li>
-                    <li>Priority feature access</li>
+                    <li>Advanced macro-based processing</li>
+                    <li>Priority help support</li>
                   </ul>
                 </div>
               </section>
             </div>
 
             <div class="footbox">
-              • All paid plans are billed monthly via <b>Lemon Squeezy</b>.<br/>
-              • Subscriptions renew automatically until canceled.<br/>
-              • Refunds may be limited due to the nature of digital services.
+              <div><b>Billing Information</b></div>
+              <div>• Paid plans are offered as <b>monthly subscriptions</b> and processed via <b>Lemon Squeezy</b>.</div>
+              <div>• Applicable taxes (such as VAT) may be shown during checkout.</div>
+              <div>• Due to the digital nature of the service, refunds may be limited once usage has occurred.</div>
+              <div>• You may cancel at any time and continue using the service until the end of the billing period.</div>
+              <div class="muted" style="margin-top:8px;">※ Features and limits may change according to service policy.</div>
             </div>
           </div>
         </div>
@@ -2149,61 +2147,61 @@ const HELP_TEXT_HTML = `
         <div class="legal-doc terms-doc">
           <style>
             .legal-doc{ font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
-            .legal-doc .container{ max-width: 920px; margin: 0 auto; padding: 24px 20px 30px; text-align: left; }
-            .legal-doc h1{ font-size: 34px; text-align:left; margin-bottom: 10px; }
-            .legal-doc h2{ margin-top: 22px; font-size: 18px; }
-            .legal-doc p, .legal-doc li{ line-height: 1.7; }
-            .legal-doc ul{ margin-left: 20px; }
+            .legal-doc .container{ max-width: 920px; margin: 0 auto; padding: 24px 20px 30px; }
+            .legal-doc h1{ font-size: 34px; margin: 6px 0 10px; text-align:left; }
             .legal-doc .meta{ text-align:left; color:#6b7280; font-size: 13px; margin-bottom: 18px; }
+            .legal-doc h2{ font-size: 18px; margin: 22px 0 10px; }
+            .legal-doc p, .legal-doc li{ line-height: 1.75; color:#111827; }
+            .legal-doc ul{ margin: 8px 0 0 20px; }
+            .legal-doc .box{ margin-top: 14px; border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px 14px; background: #fafafa; font-size: 13px; line-height: 1.65; }
+            .legal-doc .muted{ color:#6b7280; }
           </style>
 
           <div class="container">
             <h1>Terms of Service</h1>
-            <div class="meta">mAutoFlow · Monthly Subscription · Lemon Squeezy</div>
+            <div class="meta">mAutoFlow · Monthly Subscription · Payments via Lemon Squeezy</div>
+
+            <div class="box">
+              <b>Summary</b><br/>
+              • mAutoFlow analyzes user-submitted code and generates Mermaid-based flowcharts.<br/>
+              • Paid plans are billed monthly via Lemon Squeezy.<br/>
+              • Submitted code is processed solely for analysis and is not used for training.
+            </div>
 
             <h2>1. Service Description</h2>
-            <p>
-              mAutoFlow provides an automated tool that analyzes user-submitted code
-              and generates Mermaid-based flowcharts. Generated results are provided
-              as-is for visualization purposes.
-            </p>
+            <p>mAutoFlow provides automated analysis of user-submitted code or text to generate flowcharts. Users are responsible for validating the results.</p>
 
-            <h2>2. Accounts</h2>
+            <h2>2. Accounts and Usage</h2>
             <ul>
-              <li>You are responsible for maintaining the security of your account.</li>
-              <li>You must not misuse or attempt to bypass service limitations.</li>
+              <li>An email-based account may be required.</li>
+              <li>Abuse, circumvention, or automated misuse may result in restrictions.</li>
             </ul>
 
             <h2>3. Subscriptions and Billing</h2>
             <ul>
-              <li>Paid plans are billed on a monthly subscription basis.</li>
+              <li>Subscriptions are billed monthly and renew automatically unless cancelled.</li>
               <li>Payments are processed by Lemon Squeezy.</li>
-              <li>Subscriptions automatically renew unless canceled.</li>
             </ul>
 
             <h2>4. Cancellation and Refunds</h2>
             <ul>
-              <li>You may cancel your subscription at any time.</li>
-              <li>Due to the digital nature of the service, refunds may be limited.</li>
+              <li>You may cancel at any time.</li>
+              <li>Refunds may be limited due to the digital nature of the service.</li>
             </ul>
 
             <h2>5. User Content</h2>
             <ul>
-              <li>You retain ownership of the code you submit.</li>
-              <li>Your code is processed only for analysis and is not used for training.</li>
+              <li>You retain ownership of submitted code.</li>
+              <li>Code is processed only for service functionality and not for training.</li>
             </ul>
 
             <h2>6. Disclaimer</h2>
-            <p>
-              The service is provided “as is” without warranties of any kind.
-              mAutoFlow does not guarantee the accuracy or suitability of generated output.
-            </p>
+            <p>The service is provided “as is” without warranties of any kind.</p>
 
             <h2>7. Governing Law</h2>
-            <p>
-              These terms are governed by applicable international principles
-              and the laws of the service provider’s operating jurisdiction.
-            </p>
+            <p>These terms are governed by the laws of the Republic of Korea.</p>
+
+            <p class="muted" style="margin-top:22px;">※ These terms may be updated as the service evolves.</p>
           </div>
         </div>
         `;
@@ -2212,76 +2210,71 @@ const HELP_TEXT_HTML = `
         <div class="legal-doc privacy-doc">
           <style>
             .legal-doc{ font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
-            .legal-doc .container{ max-width: 980px; margin: 0 auto; padding: 24px 20px 30px; text-align: left; }
-            .legal-doc h1{ font-size: 34px; text-align:left; margin-bottom: 10px; }
-            .legal-doc h2{ margin-top: 22px; font-size: 18px; }
-            .legal-doc p, .legal-doc li{ line-height: 1.7; }
-            .legal-doc ul{ margin-left: 20px; }
-            .legal-doc table{ width:100%; border-collapse: collapse; margin-top: 12px; font-size: 13px; }
-            .legal-doc th, .legal-doc td{ border: 1px solid #e5e7eb; padding: 10px; vertical-align: top; }
-            .legal-doc th{ background:#f9fafb; text-align:left; width: 20%; }
+            .legal-doc .container{ max-width: 980px; margin: 0 auto; padding: 24px 20px 30px; }
+            .legal-doc h1{ font-size: 34px; margin: 6px 0 10px; text-align:left; }
             .legal-doc .meta{ text-align:left; color:#6b7280; font-size: 13px; margin-bottom: 18px; }
+            .legal-doc h2{ font-size: 18px; margin: 22px 0 10px; }
+            .legal-doc p, .legal-doc li{ line-height: 1.75; color:#111827; }
+            .legal-doc ul{ margin: 8px 0 0 20px; }
+            .legal-doc .box{ margin-top: 14px; border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px 14px; background: #fafafa; font-size: 13px; line-height: 1.65; }
+            .legal-doc table{ width:100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+            .legal-doc th, .legal-doc td{ border: 1px solid #e5e7eb; padding: 10px; vertical-align: top; }
+            .legal-doc th{ background:#f9fafb; text-align:left; font-weight:700; width: 20%; }
+            .legal-doc .muted{ color:#6b7280; }
           </style>
 
           <div class="container">
             <h1>Privacy Policy</h1>
-            <div class="meta">mAutoFlow · Supabase · Lemon Squeezy</div>
+            <div class="meta">Republic of Korea (PIPA) · Lemon Squeezy · Supabase</div>
+
+            <div class="box">
+              <b>Key Summary</b><br/>
+              • Payments are handled by Lemon Squeezy. mAutoFlow does not store payment details.<br/>
+              • Submitted code is processed only for flowchart generation and not for training.
+            </div>
 
             <h2>1. Information We Collect</h2>
             <ul>
-              <li>Email address (account identification)</li>
-              <li>Subscription and payment status</li>
-              <li>Usage data and access logs</li>
+              <li>Email address</li>
+              <li>Subscription and billing identifiers</li>
+              <li>Usage and access logs</li>
             </ul>
 
             <h2>2. How We Use Information</h2>
             <ul>
-              <li>Provide authentication and account services</li>
-              <li>Manage subscriptions and service limits</li>
-              <li>Improve service stability and security</li>
+              <li>Account authentication</li>
+              <li>Subscription and feature enforcement</li>
+              <li>Service security and stability</li>
             </ul>
 
-            <h2>3. Code Processing Policy</h2>
-            <p>
-              Submitted code is processed solely for generating flowcharts.
-              We do not store or use user code for training or analytics beyond this purpose.
-            </p>
+            <h2>3. Data Retention</h2>
+            <ul>
+              <li>Personal data is retained only as long as necessary or required by law.</li>
+            </ul>
 
             <h2>4. Third-Party Services</h2>
+
             <table>
-              <tr>
-                <th>Service</th>
-                <th>Purpose</th>
-                <th>Data</th>
-              </tr>
-              <tr>
-                <td>Supabase</td>
-                <td>Authentication and database</td>
-                <td>Email, account metadata</td>
-              </tr>
-              <tr>
-                <td>Lemon Squeezy</td>
-                <td>Payment and subscription processing</td>
-                <td>Email, subscription identifiers</td>
-              </tr>
+              <tr><th>Service</th><td>Supabase</td></tr>
+              <tr><th>Purpose</th><td>Authentication and account storage</td></tr>
+              <tr><th>Data</th><td>Email, account metadata</td></tr>
+              <tr><th>Location</th><td>Overseas (e.g. United States)</td></tr>
             </table>
 
-            <h2>5. Data Retention</h2>
-            <p>
-              Personal data is retained only as long as necessary to provide the service
-              or comply with legal obligations.
-            </p>
+            <table>
+              <tr><th>Service</th><td>Lemon Squeezy</td></tr>
+              <tr><th>Purpose</th><td>Subscription and payment processing</td></tr>
+              <tr><th>Data</th><td>Email, subscription identifiers</td></tr>
+              <tr><th>Location</th><td>Overseas (e.g. United States)</td></tr>
+            </table>
 
-            <h2>6. Your Rights</h2>
-            <p>
-              You may request access, correction, or deletion of your personal data
-              by contacting support.
-            </p>
+            <h2>5. Your Rights</h2>
+            <ul>
+              <li>You may request access, correction, or deletion of your personal data.</li>
+              <li>Contact: support@mautoflow.com</li>
+            </ul>
 
-            <h2>7. Contact</h2>
-            <p>
-              For privacy-related inquiries, contact: <b>mautoflow.lab@gmail.com</b>
-            </p>
+            <p class="muted" style="margin-top:22px;">※ This policy may be updated due to legal or service changes.</p>
           </div>
         </div>
         `;
