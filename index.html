@@ -3662,6 +3662,10 @@ const HELP_TEXT_HTML = `
                         }
 
                         setStatus("error", msgText);
+
+                        // ✅ in-flight 응답이 돌아왔을 때 이미 legal 모드면, 화면 덮어쓰기 금지
+                        if (window.__isLegalMode) return;
+                        
                         chartInner.innerHTML = `
                             <p class="placeholder" style="color:#b91c1c;">
                                 ${bannerText}
@@ -3803,6 +3807,10 @@ const HELP_TEXT_HTML = `
                         }
 
                         setStatus("error", msgText);
+
+                        // ✅ in-flight 응답이 돌아왔을 때 이미 legal 모드면, 화면 덮어쓰기 금지
+                        if (window.__isLegalMode) return;
+                        
                         chartInner.innerHTML = `
                             <p class="placeholder" style="color:#b91c1c;">
                                 ${bannerText}
@@ -3817,6 +3825,9 @@ const HELP_TEXT_HTML = `
                         return;
                     }
                 }
+
+                // ✅ in-flight 응답이 돌아왔을 때 이미 legal 모드면, 화면 덮어쓰기 금지
+                if (window.__isLegalMode) return;
                 
                 // 정상 플로우차트 생성
                 chartInner.innerHTML = `<div class="mermaid">${mermaidCode}</div>`;
