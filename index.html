@@ -466,14 +466,16 @@
         }
 
         /* ✅ PRICING/TERMS/PRIVACY: 로그인 여부와 무관하게 header 기준으로 고정 */
-        #legalNav{
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            transform: translate(calc(-50% - 300px), -50%); /* ✅ 중앙에서 300px 왼쪽 */
-            display: inline-flex;
-            gap: 4px;
-            white-space: nowrap;
+        :root { --legalShiftX: -300px; }  /* ← 여기 숫자만 바꾸면 됨 */
+        
+        #legalNav {
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          transform: translate(calc(-50% + var(--legalShiftX)), -50%);
+          display: inline-flex;
+          gap: 4px;
+          z-index: 10;
         }
 
 
@@ -726,13 +728,6 @@
           box-shadow: 0 0 0 2px rgba(34,197,94,0.35); /* 기존 그린 톤에 맞춤 */
         }
 
-        .topnav{
-          display:flex;
-          gap:14px;
-          align-items:center;
-          margin-left: -330px; /* ← PRICING / TERMS / PRIVACY 왼쪽으로 약 9cm 이동 */
-          margin-right: 16px;
-        }
         .topnav a{
           color: rgba(226,232,240,0.95);
           text-decoration:none;
@@ -743,10 +738,6 @@
         .topnav a:hover{
           opacity:1;
           text-decoration: underline;
-        }
-
-        #legalNav{
-          transform: translateX(-300px);
         }
       
     </style>
