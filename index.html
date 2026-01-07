@@ -4174,34 +4174,31 @@ const HELP_TEXT_HTML = `
 
         <!-- 오른쪽 상단 메뉴: 로그인 + 버튼 + 백엔드 버전 -->
         <div class="topbar-right">
-            <!-- 로그인 영역 -->
-            <span id="welcomeText" style="margin-right:8px;"></span>
-
-            <div id="loggedOutButtons" style="display:inline-flex; gap:4px; margin-right:8px;">
-                <button class="btn-settings" onclick="loginWithGoogle()">Login with Google</button>
-            </div>
-
-            <div id="loggedInButtons" style="display:none; gap:4px; margin-right:8px;">
-                <button class="btn-settings" onclick="logout()">Logout</button>
-            </div>
-            <!-- 로그인 영역 끝 -->
-
-            <!-- ✅ Legal nav (박스 버튼) -->
+            <!-- ✅ Legal nav (박스 버튼): Welcome "앞(왼쪽)"으로 이동 -->
             <div id="legalNav" style="display:inline-flex; gap:4px; margin-right:8px;">
               <button class="btn-settings" onclick="return navigateTo('/pricing', event)">PRICING</button>
               <button class="btn-settings" onclick="return navigateTo('/terms-of-service', event)">TERMS</button>
               <button class="btn-settings" onclick="return navigateTo('/privacy-policy', event)">PRIVACY</button>
             </div>
 
-            <!-- ✅ EDIT(복귀) 버튼: 기본은 숨김, legal 페이지에서만 표시 -->
+            <!-- ✅ EDIT(복귀) 버튼 -->
             <button id="editButton" class="btn-settings" style="display:none;" onclick="goBackToEditor()">
               EDIT
             </button>
 
+            <!-- 로그인 영역 -->
+            <span id="welcomeText" style="margin-right:8px;"></span>
+
+            <div id="loggedOutButtons" style="display:inline-flex; gap:4px; margin-right:8px;">
+              <button class="btn-settings" onclick="loginWithGoogle()">Login with Google</button>
+            </div>
+
+            <div id="loggedInButtons" style="display:none; gap:4px; margin-right:8px;">
+              <button class="btn-settings" onclick="logout()">Logout</button>
+            </div>
+
             <!-- 기능 버튼들 -->
-            <button id="upgradeButton"
-                    class="btn-settings"
-                    onclick="openProCheckout()">
+            <button id="upgradeButton" class="btn-settings" onclick="openProCheckout()">
                 UPGRADE
             </button>
 
