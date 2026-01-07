@@ -1905,8 +1905,8 @@ const HELP_TEXT_HTML = `
           hide('button[onclick="toggleHelp()"]');      // helpToggleBtn
           hide("#helpToggleBtn");
           hide('button[onclick="openProCheckout()"]'); // upgrade
-          hide("#legalNav");
-          hide("#editButton");
+          const editBtn = document.getElementById("editButton");
+          if (editBtn) editBtn.style.display = ""; // 또는 "inline-flex"
 
           // regenerate/toolbar도 숨기면 “문서 페이지” 느낌이 깔끔함
           const toolbar = document.getElementById("toolbar");
@@ -1945,6 +1945,9 @@ const HELP_TEXT_HTML = `
           show('button[onclick="toggleHelp()"]');
           show("#helpToggleBtn");
           show('button[onclick="openProCheckout()"]');
+
+          // ✅ legalNav 원복(이게 빠져서 legal 다녀오면 버튼 3개가 사라졌던 것)
+          show("#legalNav");
 
           // toolbar/좌측/디바이더 원복
           const toolbar = document.getElementById("toolbar");
@@ -2036,9 +2039,19 @@ const HELP_TEXT_HTML = `
 
           // 3) 그 외(= 편집 메인 화면) -> 원복
           restoreAppViewMode();
+
+          // ✅ legal 문서로 덮어쓴 chartInner를 "차트 모드"로 복구
+          const chartInner = document.getElementById("chartInner");
+          if (chartInner && chartInner.querySelector(".legal-doc")) {
+            // 필요하면 placeholder로 한번 초기화(선택)
+            // chartInner.innerHTML = `<div class="placeholder">...</div>`;
+          }
+
+          // ✅ 현재 src 기준으로 차트 재생성(핵심)
+          if (typeof generateFlowchart === "function") {
+            generateFlowchart(false);
+          }
         }
-
-
 
         // ============================
         //  HTML entity decode helpers
@@ -3984,13 +3997,8 @@ const HELP_TEXT_HTML = `
                 return; // 공유 페이지에서는 일반 초기 플로우차트 생성 흐름을 타지 않게 종료
             }
 
-            // ✅ 추가: legal 페이지 진입 처리
-            const legal = getLegalPath();
-            if (legal) {
-              applyLegalViewMode();
-              renderLegalDoc(legal);
-              return;
-            }
+            // ✅ 라우팅은 한 군데(handleRoute)에서만 처리
+            handleRoute();
             
 
             // SETTINGS 라디오들 초기화 (기본은 모달 DOM 기준)
