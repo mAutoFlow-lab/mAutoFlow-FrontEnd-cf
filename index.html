@@ -1330,7 +1330,7 @@ const HELP_TEXT_HTML = `
             if (tier === "free") {
                 // 아직 서버 usage 정보가 없는 초기 상태라면 기본 문구
                 if (window.__serverUsageCount == null || window.__dailyFreeLimit == null) {
-                    span.textContent = `Free plan: 5 diagrams per day, up to ${FREE_NODE_LIMIT} nodes.`;
+                    span.textContent = `Lite plan: 5 diagrams per day, up to ${FREE_NODE_LIMIT} nodes.`;
                     span.title = "Daily limit is enforced on the server.";
                     return;
                 }
@@ -2172,13 +2172,13 @@ const HELP_TEXT_HTML = `
 
             <div class="box">
               <b>Summary</b><br/>
-              • mAutoFlow analyzes user-submitted code/text and generates Mermaid-based flowcharts.<br/>
+              • mAutoFlow analyzes user-submitted code or text and provides automatically generated visual flowcharts.<br/>
               • Paid plans are billed monthly. Payment processing is handled by Lemon Squeezy.<br/>
               • Submitted code is processed only to provide the service (analysis/flowchart generation) and is not used for training.
             </div>
 
             <h2>1. Service Description</h2>
-            <p>mAutoFlow provides an automated tool that analyzes user-submitted code or text and generates Mermaid-based flowcharts. Outputs are provided “as is” for visualization purposes, and you are responsible for reviewing and validating results.</p>
+            <p>mAutoFlow provides an automated tool that analyzes user-submitted code or text and generates flowcharts. Outputs are provided “as is” for visualization purposes, and you are responsible for reviewing and validating results.</p>
 
             <h2>2. Accounts and Acceptable Use</h2>
             <ul>
