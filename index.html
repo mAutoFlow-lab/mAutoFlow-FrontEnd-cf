@@ -1871,6 +1871,14 @@ const HELP_TEXT_HTML = `
         }
 
 
+        // (navigateTo 위쪽 아무데나 - 전역)
+        let __returnToEditorPath = "/";
+
+        function isLegalPath(pathname) {
+          return pathname === "/pricing" || pathname === "/terms" || pathname === "/privacy";
+        }
+
+
         // ============================
         //  LEGAL 페이지 라우팅 (/pricing, /terms-of-service, /privacy-policy)
         // ============================
@@ -1882,12 +1890,20 @@ const HELP_TEXT_HTML = `
           return null;
         }
 
+        // 
         function navigateTo(path, e) {
           if (e) e.preventDefault();
+
+          // ✅ "편집 화면(legal 아닌 상태)"에서 "legal로 들어갈 때만" 복귀 URL 저장
+          const curPath = window.location.pathname;
+          if (!isLegalPath(curPath) && isLegalPath(path)) {
+            __returnToEditorPath = window.location.pathname + window.location.search + window.location.hash;
+          }
+
           history.pushState({}, "", path);
           handleRoute();
-          return false;
         }
+
 
         window.addEventListener("popstate", handleRoute);
 
@@ -1906,7 +1922,10 @@ const HELP_TEXT_HTML = `
           hide("#helpToggleBtn");
           hide('button[onclick="openProCheckout()"]'); // upgrade
           const editBtn = document.getElementById("editButton");
-          if (editBtn) editBtn.style.display = ""; // 또는 "inline-flex"
+          if (editBtn) {
+            editBtn.style.display = "";              // 혹시 inline style로 막혀있으면 해제
+            editBtn.classList.add("btn-code-blink"); // CODE와 동일 효과
+          }
 
           // regenerate/toolbar도 숨기면 “문서 페이지” 느낌이 깔끔함
           const toolbar = document.getElementById("toolbar");
@@ -1975,15 +1994,19 @@ const HELP_TEXT_HTML = `
 
           // ✅ EDIT 버튼은 편집 화면에선 숨김
           const editBtn = document.getElementById("editButton");
-          if (editBtn) editBtn.style.display = "none";
+          if (editBtn) {
+            editBtn.classList.remove("btn-code-blink");
+            editBtn.style.display = "none";
+          }
         }
 
         function goBackToEditor() {
-          // 뒤로갈 히스토리가 있으면 back, 없으면 루트로
-          if (window.history.length > 1) window.history.back();
-          else navigateTo("/", null);
-        }
+          const target = (__returnToEditorPath && !isLegalPath(__returnToEditorPath))
+            ? __returnToEditorPath
+            : "/";
 
+          navigateTo(target, null);
+        }
         
 
         const PRICING_HTML = `
