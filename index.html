@@ -1727,6 +1727,17 @@ const HELP_TEXT_HTML = `
             return;
           }
 
+          // ✅ Free(Lite) 차단: SHARE는 Pro/Expert만
+          {
+            const tier = window.__planTier || (window.__isProUser ? "pro" : "free");
+            const isFree = (tier === "free") && !window.__isTestAccount;
+            if (isFree) {
+              showShareUpgradePrompt();
+              return;
+            }
+          }
+          
+
           const overlay = document.getElementById("shareOverlay");
           const input = document.getElementById("shareLinkInput");
           const hint  = document.getElementById("shareHint");
@@ -2821,6 +2832,13 @@ const HELP_TEXT_HTML = `
 
         // 다운로드 타입에 따라 분기
         async function downloadDiagram() {
+          const tier = window.__planTier || (window.__isProUser ? "pro" : "free");
+          const isFree = (tier === "free") && !window.__isTestAccount;
+          if (isFree) {
+            showDownloadUpgradePrompt();
+            return;
+          }
+            
           if (downloadFormat === "png") {
             await downloadAsPNG();   // ✅ 프론트 변환
           } else {
@@ -3115,6 +3133,58 @@ const HELP_TEXT_HTML = `
               <p class="placeholder" style="color:#b91c1c;">
                 Macro Defines (Defined mode) is a Pro/Expert feature.<br/>
                 Please upgrade to enable macro-based preprocessing.
+              </p>
+            `;
+          }
+
+          // 3) UPGRADE 버튼 블링크
+          const ub = document.getElementById("upgradeButton");
+          if (ub) {
+            const tier = window.__planTier || (window.__isProUser ? "pro" : "free");
+            const shouldShow = (tier !== "expert") && !window.__isTestAccount;
+
+            ub.style.display = shouldShow ? "inline-flex" : "none";
+            if (shouldShow) ub.classList.add("upgrade-blink");
+          }
+        }
+
+        function showShareUpgradePrompt() {
+          // 1) 상태 메시지
+          setStatus("error", "SHARE is available on Pro/Expert. Please upgrade to use this feature.");
+
+          // 2) 플로우차트 영역에도 안내 문구
+          const chartInner = document.getElementById("chartInner");
+          if (chartInner) {
+            chartInner.innerHTML = `
+              <p class="placeholder" style="color:#b91c1c;">
+                SHARE is a Pro/Expert feature.<br/>
+                Please upgrade to create a share link.
+              </p>
+            `;
+          }
+
+          // 3) UPGRADE 버튼 블링크
+          const ub = document.getElementById("upgradeButton");
+          if (ub) {
+            const tier = window.__planTier || (window.__isProUser ? "pro" : "free");
+            const shouldShow = (tier !== "expert") && !window.__isTestAccount;
+
+            ub.style.display = shouldShow ? "inline-flex" : "none";
+            if (shouldShow) ub.classList.add("upgrade-blink");
+          }
+        }
+
+        function showDownloadUpgradePrompt() {
+          // 1) 상태 메시지
+          setStatus("error", "DOWNLOAD is available on Pro/Expert. Please upgrade to use this feature.");
+
+          // 2) 플로우차트 영역에도 안내 문구
+          const chartInner = document.getElementById("chartInner");
+          if (chartInner) {
+            chartInner.innerHTML = `
+              <p class="placeholder" style="color:#b91c1c;">
+                DOWNLOAD is a Pro/Expert feature.<br/>
+                Please upgrade to download the diagram.
               </p>
             `;
           }
