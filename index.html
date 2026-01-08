@@ -806,6 +806,24 @@
           window.location.href = url;
         }
 
+        function openCheckoutByTier(tier) {
+          // tier: "pro" | "expert"
+          if (!PAYMENT_ENABLED) {
+            alert("Upgrade (Coming Soon)\nPayments are currently being enabled.\nUpgrade to Pro or Expert will be available soon.");
+            return;
+          }
+
+          const user = window.currentUser;
+          if (!user) {
+            alert("먼저 Google 로그인 후 다시 시도해 주세요.");
+            return;
+          }
+
+          const baseUrl = (tier === "expert") ? EXPERT_CHECKOUT_URL : PRO_CHECKOUT_URL;
+          const url = `${baseUrl}?checkout[custom][user_id]=${encodeURIComponent(user.id)}`;
+          window.location.href = url;
+        }
+
         function getMaxEdgesByPlan() {
           // TODO: 나중에 실제 플랜 변수로 교체
           const plan = window.currentUserPlan || "free"; 
@@ -2084,9 +2102,15 @@ const HELP_TEXT_HTML = `
             .legal-doc .sub{ text-align:left; color:#6b7280; margin: 0 0 18px; }
             .legal-doc .grid{ display:flex; flex-direction:column; gap: 16px; margin-top: 18px; }
 
-            .legal-doc .plan{ border: 1px solid #d1d5db; border-radius: 14px; overflow: hidden; background: #fff; }
+            .legal-doc .plan{
+              border: 1px solid #d1d5db; border-radius: 14px; overflow: hidden; background: #fff;
+              cursor: pointer;
+            }
             .legal-doc .plan.selected{ border: 2px solid #7c3aed; box-shadow: 0 0 0 3px rgba(124,58,237,0.10); }
 
+            .legal-doc .plan:hover{
+              box-shadow: 0 0 0 3px rgba(124,58,237,0.06);
+            }
             .legal-doc .plan-header{ display:flex; align-items:center; justify-content:space-between; padding: 14px 16px; border-bottom: 1px solid #e5e7eb; }
             .legal-doc .left{ display:flex; align-items:center; gap: 12px; }
             .legal-doc .radio{ width: 18px; height: 18px; border-radius: 50%; border: 2px solid #9ca3af; position: relative; }
@@ -2117,7 +2141,7 @@ const HELP_TEXT_HTML = `
             <p class="sub">Choose the plan that fits your needs. Monthly subscription only.</p>
 
             <div class="grid">
-              <section class="plan selected">
+              <section class="plan selected" data-plan="lite">
                 <div class="plan-header">
                   <div class="left">
                     <div class="radio"></div>
@@ -2136,7 +2160,7 @@ const HELP_TEXT_HTML = `
                 </div>
               </section>
 
-              <section class="plan">
+              <section class="plan" data-plan="pro">
                 <div class="plan-header">
                   <div class="left">
                     <div class="radio"></div>
@@ -2158,7 +2182,7 @@ const HELP_TEXT_HTML = `
                 </div>
               </section>
 
-              <section class="plan">
+              <section class="plan" data-plan="expert">
                 <div class="plan-header">
                   <div class="left">
                     <div class="radio"></div>
@@ -2443,14 +2467,31 @@ const HELP_TEXT_HTML = `
 
           const plans = pricing.querySelectorAll(".plan");
 
+          const selectPlan = (plan) => {
+            plans.forEach(p => p.classList.remove("selected"));
+            plan.classList.add("selected");
+          };
+
           plans.forEach(plan => {
+            // ✅ 1) hover(마우스 진입)만으로 선택되게
+            plan.addEventListener("mouseenter", () => {
+              selectPlan(plan);
+            });
+
+            // ✅ 2) 클릭하면 결제/업그레이드 동작
             plan.addEventListener("click", () => {
-              plans.forEach(p => p.classList.remove("selected"));
-              plan.classList.add("selected");
+              const tier = plan.dataset.plan;  // "lite" | "pro" | "expert"
+              if (tier === "pro") {
+                openCheckoutByTier("pro");
+              } else if (tier === "expert") {
+                openCheckoutByTier("expert");
+              } else {
+                // lite는 결제 이동 없음 (선택만 유지)
+                selectPlan(plan);
+              }
             });
           });
         }
-
 
 
         function handleRoute() {
