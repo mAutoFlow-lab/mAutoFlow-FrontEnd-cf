@@ -90,7 +90,7 @@
             flex-direction: column;
             font-size: 14px; /* UI 기본 폰트 */
             background: var(--bg-main);
-            padding-bottom: 46px; /* footer 높이만큼 (겹침 방지) */
+            padding-bottom: 32px; /* footer 높이만큼 (겹침 방지) */
         }
         header {
             padding: 10px 16px;
@@ -734,13 +734,13 @@
           left: 0;
           right: 0;
           bottom: 0;
-          height: 46px;
+          height: 32px;
           background: var(--bg-header);
           color: var(--header-text);
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 0 16px;
+          padding: 0 12px;
           z-index: 60; /* 모달보다 아래로 두고 싶으면 더 낮춰도 됨 */
           border-top: 1px solid rgba(255,255,255,0.10);
         }
@@ -762,8 +762,8 @@
           color: inherit;
           opacity: 0.9;
           text-decoration: none;
-          padding: 6px 8px;
-          border-radius: 6px;
+          padding: 2px 6px;
+          border-radius: 4px;
         }
 
         #footerBar .footer-link:hover{
@@ -1866,6 +1866,7 @@ const HELP_TEXT_HTML = `
           hide('button[onclick="openSettings()"]');
           hide("#helpToggleBtn");
           hide('button[onclick="openProCheckout()"]');
+          hide("#footerBar");
 
           const regenBtn = document.querySelector('#toolbar button[onclick^="generateFlowchart"]');
           if (regenBtn) regenBtn.style.display = "none";
