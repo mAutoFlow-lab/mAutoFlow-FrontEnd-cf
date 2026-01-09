@@ -803,7 +803,8 @@
           // Hosted Checkout URL + custom user_id 전달
           // docs: https://[STORE].lemonsqueezy.com/checkout/buy/[VARIANT_ID]?checkout[custom][user_id]=123 
           const baseUrl = PRO_CHECKOUT_URL;
-          const url = `${baseUrl}?checkout[custom][user_id]=${encodeURIComponent(user.id)}`;
+          const sep = baseUrl.includes("?") ? "&" : "?";
+          const url = `${baseUrl}${sep}checkout[custom][user_id]=${encodeURIComponent(user.id)}`;
 
           window.location.href = url;
         }
@@ -822,7 +823,8 @@
           }
 
           const baseUrl = (tier === "expert") ? EXPERT_CHECKOUT_URL : PRO_CHECKOUT_URL;
-          const url = `${baseUrl}?checkout[custom][user_id]=${encodeURIComponent(user.id)}`;
+          const sep = baseUrl.includes("?") ? "&" : "?";
+          const url = `${baseUrl}${sep}checkout[custom][user_id]=${encodeURIComponent(user.id)}`;
           window.location.href = url;
         }
 
