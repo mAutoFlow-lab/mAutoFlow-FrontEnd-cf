@@ -3784,11 +3784,33 @@ const HELP_TEXT_HTML = `
                     return;
                 }
 
-                const res = await fetch(API_BASE + "/api/convert_text/", {   // ✅ trailing slash 추가
-                    method: "POST",
-                    body: formData,
-                    mode: "cors"  // (명시해도 되고, 없어도 되지만 디버깅/명확성에 도움)
-                });
+                async function postConvertText(formData) {
+                  // ✅ 백엔드가 /api/convert_text 또는 /api/convert_text/ 어느 쪽이든 redirect 없이 맞춰 타게 함
+                  const candidates = [
+                    API_BASE + "/api/convert_text",
+                    API_BASE + "/api/convert_text/"
+                  ];
+
+                  let lastErr = null;
+
+                  for (const url of candidates) {
+                    try {
+                      const res = await fetch(url, {
+                        method: "POST",
+                        body: formData,
+                        cache: "no-store",
+                        // redirect: "follow" (default) 이지만, 여기서 핵심은 "redirect 자체를 안 타는 URL"을 찾는 것
+                      });
+                      return res; // ✅ 성공/실패 응답(res.ok 여부)은 바깥 로직에서 기존대로 처리
+                    } catch (e) {
+                      lastErr = e; // TypeError: Failed to fetch (CORS/네트워크 포함)
+                    }
+                  }
+
+                  throw lastErr || new Error("Failed to call convert_text");
+                }
+
+                const res = await postConvertText(formData);
 
                 if (!res.ok) {
                     let data = {};
