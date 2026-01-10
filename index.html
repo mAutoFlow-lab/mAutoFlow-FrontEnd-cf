@@ -776,12 +776,18 @@
 
     <script>
         const API_BASE = "https://mautoflow-backend.onrender.com";
+        // ✅ "live" / "test" 중 하나로 고정 (혼선 방지)
+        const LEMON_MODE = "live"; // ← 테스트할 땐 "test"
+
+        const LEMON_VARIANT = {
+          live: { pro: 1202932, expert: 1202933 },
+          test: { pro: 1134483, expert: 1135830 },
+        };
+
         const PRO_CHECKOUT_URL =
-  "https://mautoflow-lab.lemonsqueezy.com/checkout/buy/124eae2f-3ed0-4873-9223-135025e83e8e?enabled=1202932";
-
+          `https://mautoflow-lab.lemonsqueezy.com/checkout/buy/124eae2f-3ed0-4873-9223-135025e83e8e?enabled=${LEMON_VARIANT[LEMON_MODE].pro}`;
         const EXPERT_CHECKOUT_URL =
-  "https://mautoflow-lab.lemonsqueezy.com/checkout/buy/c4ea3b6b-6c15-42a9-b857-86cae9f480eb?enabled=1202933";
-
+          `https://mautoflow-lab.lemonsqueezy.com/checkout/buy/c4ea3b6b-6c15-42a9-b857-86cae9f480eb?enabled=${LEMON_VARIANT[LEMON_MODE].expert}`;
 
         const PAYMENT_ENABLED = true;  // ← Live 전환 시 true
 
@@ -828,6 +834,7 @@
             alert("먼저 Google 로그인 후 다시 시도해 주세요.");
             return;
           }
+          console.log("[CHECKOUT USER]", { id: user.id, email: user.email, tier });
 
           const baseUrl = (tier === "expert") ? EXPERT_CHECKOUT_URL : PRO_CHECKOUT_URL;
           const sep = baseUrl.includes("?") ? "&" : "?";
