@@ -2510,15 +2510,34 @@ const HELP_TEXT_HTML = `
 
             // ✅ 2) 클릭하면 결제/업그레이드 동작
             plan.addEventListener("click", () => {
-              const tier = plan.dataset.plan;  // "lite" | "pro" | "expert"
+              const tier = plan.dataset.plan; // "lite" | "pro" | "expert"
+
+              // ✅ 현재 플랜(서버 응답 우선) 확인
+              const currentTier =
+                (window.__planTier || window.currentUserPlan || "free").toLowerCase(); // "free" | "pro" | "expert"
+
               if (tier === "pro") {
+                // ✅ Pro -> Pro : 아무 일도 안 일어나야 함(선택만 유지)
+                if (currentTier === "pro") {
+                  selectPlan(plan);
+                  return;
+                }
                 openCheckoutByTier("pro");
-              } else if (tier === "expert") {
-                openCheckoutByTier("expert");
-              } else {
-                // lite는 결제 이동 없음 (선택만 유지)
-                selectPlan(plan);
+                return;
               }
+
+              if (tier === "expert") {
+                // ✅ Expert -> Expert : 아무 일도 안 일어나야 함(선택만 유지)
+                if (currentTier === "expert") {
+                  selectPlan(plan);
+                  return;
+                }
+                openCheckoutByTier("expert");
+                return;
+              }
+
+              // lite는 결제 이동 없음 (선택만 유지)
+              selectPlan(plan);
             });
           });
         }
