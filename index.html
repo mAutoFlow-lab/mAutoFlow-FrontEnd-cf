@@ -1496,6 +1496,10 @@ const HELP_TEXT_HTML = `
                         window.__planTier = "free";
                     }
                     updateQuotaInfo();
+
+                    // ✅ [ADD] “free로 간주” 시점에도 UPGRADE 버튼 표시 복구
+                    applyUpgradeButtonUI(window.__nodeCount);
+                    
                     return;
                 }
 
@@ -1520,6 +1524,9 @@ const HELP_TEXT_HTML = `
                 // 새 플랜 정보 반영해서 상단 문구/대시보드 다시 그리기
                 updateQuotaInfo();
                 try { updateDashboardUI(); } catch (_) {}
+
+                // ✅ [ADD] 플랜 확정 후 UPGRADE 버튼 표시/블링크 상태도 갱신
+                applyUpgradeButtonUI(window.__nodeCount);
 
             } catch (e) {
                 console.error("[UI] refreshPlanFromSupabase error:", e);
@@ -4062,6 +4069,13 @@ const HELP_TEXT_HTML = `
                     setStatus("error", uiMsg);
                     chartInner.innerHTML = `<p class="placeholder" style="color:#b91c1c;">${uiMsg}</p>`;
                     currentFunc.textContent = "";
+
+                    // ✅ [ADD] 제한/업그레이드 유도성 에러면 UPGRADE 버튼 표시 + 블링크
+                    const codeUpper = (errorCode || "").toString().toUpperCase();
+                    if (!isTestUser && ["TOO_MANY_NODES", "DAILY_LIMIT_EXCEEDED"].includes(codeUpper)) {
+                      applyUpgradeButtonUI(undefined, { forceBlink: true });
+                    }
+                    
                     return;
                 }
 
