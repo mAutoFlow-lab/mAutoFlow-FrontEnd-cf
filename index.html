@@ -3802,10 +3802,10 @@ const HELP_TEXT_HTML = `
 
                 // 여기서 FormData 에 access_token 필드를 넣어준다
                 if (accessToken) {
-                    console.log(
-                        "accessToken from Supabase:",
-                        accessToken.slice(0, 20) + "..."   // 앞 20글자만 찍어서 길이 확인
-                    );
+                    // console.log(
+                    //    "accessToken from Supabase:",
+                    //    accessToken.slice(0, 20) + "..."   // 앞 20글자만 찍어서 길이 확인
+                    // );
                     formData.append("access_token", accessToken);
                     // 추가: user_id / user_email
                     if (window.currentUser) {
