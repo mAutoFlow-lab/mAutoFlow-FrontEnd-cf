@@ -1959,7 +1959,7 @@ const HELP_TEXT_HTML = `
 
 
         // (navigateTo 위쪽 아무데나 - 전역)
-        let __returnToEditorPath = "/";
+        let __returnToEditorPath = "/app/";
 
         function isLegalPath(pathname) {
           return (
@@ -2113,7 +2113,7 @@ const HELP_TEXT_HTML = `
         function goBackToEditor() {
           const target = (__returnToEditorPath && !isLegalPath(__returnToEditorPath))
             ? __returnToEditorPath
-            : "/";
+            : "/app/";
 
           navigateTo(target, null);
         }
