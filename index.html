@@ -476,20 +476,16 @@ int compute(int x) {
 
         <div class="card">
           <div class="mini-label">Output</div>
-          <div style="color: var(--muted); line-height: 1.65;">
-            Put your generated flowchart image/GIF here.
-            <br/><br/>
-            <div class="chart-placeholder" style="min-height: 210px; display:flex; align-items:center; justify-content:center;">
-              <div>
-                <div style="font-weight:600; color: rgba(255,255,255,0.78); margin-bottom: 6px;">Flowchart preview</div>
-                <div style="font-size: 13px;">e.g. <span style="font-family:var(--mono)">/assets/example_flow.gif</span></div>
-              </div>
-            </div>
-          </div>
 
-          <!-- Example:
-          <img src="/assets/example_flow.gif" alt="Flowchart generated from C code" style="width:100%; border-radius:14px; border:1px solid var(--border);">
-          -->
+          <div class="chart-placeholder"
+               style="min-height: 210px; display:flex; align-items:center; justify-content:center; padding: 0;">
+            <img
+              src="/assets/example_flow.png"
+              alt="Flowchart generated from the example C code"
+              style="width:100%; height:100%; object-fit:contain; border-radius:14px;"
+              loading="lazy"
+            />
+          </div>
         </div>
       </div>
     </div>
