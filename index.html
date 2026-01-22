@@ -332,11 +332,11 @@
           </p>
 
           <div class="cta-row">
-            <a class="btn btn-primary" href="/app/">Try it now — sign up required</a>
+            <a class="btn btn-primary" href="/app/">Log in to generate flowcharts</a>
             <a class="btn" href="#example">See an example</a>
           </div>
           <div class="helper">
-            Tip: You can start with sample code. Login is only needed for saving, sharing, or exporting.
+            Tip: Login is required to generate flowcharts. It takes a few seconds.
           </div>
         </div>
 
@@ -365,16 +365,20 @@ int compute(int x) {
 }</pre>
             </div>
             <div class="chart-pane">
-              <div class="chart-placeholder">
-                <div style="font-weight:600; color: rgba(255,255,255,0.78); margin-bottom: 6px;">
-                  Flowchart appears here
-                </div>
-                <div style="font-size: 13px; line-height: 1.55;">
-                  Replace this placeholder with a GIF/video<br/>
-                  of your real “code → chart” generation.
-                </div>
-                <!-- Option: put an <img src="/assets/preview.gif" alt="mAutoFlow generates a flowchart from C code"> -->
-              </div>
+              <video
+                  src="/assets/demo.mp4"
+                  autoplay
+                  loop
+                  muted
+                  playsinline
+                  preload="metadata"
+                  style="
+                    width: 100%;
+                    border-radius: 14px;
+                    border: 1px solid rgba(255,255,255,0.12);
+                  "
+              >
+              </video>
             </div>
           </div>
         </div>
@@ -516,7 +520,7 @@ int compute(int x) {
       </div>
 
       <div class="cta-row" style="margin-top:18px;">
-        <a class="btn btn-primary" href="/app">Paste code and try</a>
+        <a class="btn btn-primary" href="/app/">Paste code and try</a>
       </div>
     </div>
   </section>
@@ -535,6 +539,7 @@ int compute(int x) {
           <ul class="list">
             <li>Code is processed only to generate flowcharts.</li>
             <li>No training on your source code.</li>
+            <li>Login is required to generate flowcharts to prevent abuse.</li>
             <li>HTTPS communication.</li>
           </ul>
         </div>
@@ -565,7 +570,7 @@ int compute(int x) {
           Paste your code and get a flowchart instantly. Login only when you need saving, sharing, or exporting.
         </p>
         <div class="cta-row">
-          <a class="btn btn-primary" href="/app/">Try it now — sign up required</a>
+          <a class="btn btn-primary" href="/app/">Log in to generate flowcharts</a>
           <a class="btn" href="/pricing">See pricing</a>
         </div>
       </div>
