@@ -644,5 +644,12 @@ int compute(int x) {
     });
   </script>
   -->
+  <script>
+  (function () {
+    if (window.location.hash.includes('access_token=')) {
+      window.location.replace(window.location.origin + '/app/');
+    }
+  })();
+  </script>
 </body>
 </html>
