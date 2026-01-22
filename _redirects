@@ -1,0 +1,6 @@
+/app/*               /app/index.html          200
+/share/*             /app/index.html          200
+/pricing             /app/index.html          200
+/terms-of-service    /app/index.html          200
+/privacy-policy      /app/index.html          200
+/*                   /index.html              200
