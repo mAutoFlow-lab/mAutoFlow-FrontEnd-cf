@@ -1,11 +1,12 @@
-/assets/*            /assets/:splat           200
-/*.*                 /:splat                  200
+# 1. /app → /app/ (슬래시 정규화)
+ /app            /app/              301
 
-/app/*               /app/                    200
-/share/*             /app/                    200
-/pricing             /app/                    200
-/terms-of-service    /app/                    200
-/privacy-policy      /app/                    200
+# 2. app SPA 라우팅
+ /app/*          /app/index.html    200
 
-/*                   /                        200
+# 3. share 링크도 app SPA에서 처리
+ /share/*        /app/index.html    200
+
+# 4. 나머지는 랜딩 index.html
+ /*              /index.html        200
 
