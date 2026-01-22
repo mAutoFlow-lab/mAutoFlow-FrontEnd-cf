@@ -159,6 +159,39 @@
       color: var(--muted);
       font-size: 13px;
     }
+
+    .video-card{
+      margin-top: 16px;
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 14px;
+    }
+
+    .video-title{
+      font-size: 13px;
+      color: rgba(255,255,255,0.72);
+      margin-bottom: 10px;
+    }
+
+    .video-wrap{
+      position: relative;
+      width: 100%;
+      padding-top: 56.25%; /* 16:9 */
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .video-wrap iframe{
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+      
     .dots{ display:flex; gap:7px; align-items:center; }
     .dot{ width:10px; height:10px; border-radius:99px; background: rgba(255,255,255,0.18); }
     .dot:nth-child(1){ background: rgba(239,68,68,0.55); }
@@ -419,6 +452,20 @@ int compute(int x) {
       <h2 class="section-title">How it works</h2>
       <p class="section-desc">Simple workflow. No diagram tools. No manual drawing.</p>
 
+      <!-- Intro video -->
+      <div class="video-card" aria-label="Intro video">
+        <div class="video-title">2-minute intro</div>
+        <div class="video-wrap">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/DlkCZ996ozA?rel=0&modestbranding=1"
+            title="mAutoFlow intro"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen>
+          </iframe>
+        </div>
+      </div> 
+
       <div class="grid-3">
         <div class="card">
           <div class="mini-label">Step 1</div>
@@ -563,7 +610,7 @@ int compute(int x) {
       <div class="card" style="padding: 22px 22px; background: rgba(255,255,255,0.05);">
         <h2 class="section-title" style="margin-bottom:8px;">Understand your C code today</h2>
         <p class="section-desc" style="margin-bottom:16px;">
-          Paste your code and get a flowchart instantly. Login only when you need saving, sharing, or exporting.
+          Paste your code and get a flowchart instantly. Login is required to generate flowcharts.
         </p>
         <div class="cta-row">
           <a class="btn btn-primary" href="/app/">Log in to generate flowcharts</a>
