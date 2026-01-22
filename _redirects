@@ -1,6 +1,11 @@
-/app/*               /app/                   200
-/share/*             /app/                   200
-/pricing             /app/                   200
-/terms-of-service    /app/                   200
-/privacy-policy      /app/                   200
-/*                   /                       200
+/assets/*            /assets/:splat           200
+/*.*                 /:splat                  200
+
+/app/*               /app/                    200
+/share/*             /app/                    200
+/pricing             /app/                    200
+/terms-of-service    /app/                    200
+/privacy-policy      /app/                    200
+
+/*                   /                        200
+
