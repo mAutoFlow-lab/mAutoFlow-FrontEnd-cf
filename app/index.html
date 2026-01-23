@@ -2575,9 +2575,16 @@ const HELP_TEXT_HTML = `
 
           // ✅ legal 문서로 덮어쓴 chartInner를 "차트 모드"로 복구
           const chartInner = document.getElementById("chartInner");
+          const currentFunc = document.getElementById("currentFunc");
+                                         
           if (chartInner && chartInner.querySelector(".legal-doc")) {
-            // 필요하면 placeholder로 한번 초기화(선택)
-            // chartInner.innerHTML = `<div class="placeholder">...</div>`;
+            // editor 기본 placeholder로 강제 복구 (로그아웃 상태에서도 잔상 제거)
+            chartInner.innerHTML = `
+              <p class="placeholder">
+                When you enter C code on the left, a flowchart is automatically generated on the right.
+              </p>
+  `          ;
+            if (currentFunc) currentFunc.textContent = "";
           }
 
           // ✅ 현재 src 기준으로 차트 재생성(핵심)
@@ -3723,8 +3730,18 @@ const HELP_TEXT_HTML = `
 
             // 로그인 상태 확인
             if (!window.currentUser) {
-                setStatus("error", "Please log in to use mAutoFlow.");
-                return;
+              setStatus("error", "Please log in to use mAutoFlow.");
+
+              // ✅ (방어) 혹시 chartInner가 legal-doc 상태면 placeholder로 복구
+              if (chartInner && chartInner.querySelector(".legal-doc")) {
+                chartInner.innerHTML = `
+                  <p class="placeholder">
+                    When you enter C code on the left, a flowchart is automatically generated on the right.
+                  </p>
+                `;
+              }
+              if (currentFunc) currentFunc.textContent = "";
+              return;
             }
 
             // 테스트 계정 여부
