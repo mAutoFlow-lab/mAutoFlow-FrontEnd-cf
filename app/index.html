@@ -5186,11 +5186,14 @@ void main(void)
         }
 
         async function loginWithGoogle() {
+            // ✅ 지금 보고 있는 페이지로 그대로 돌아오게 해서,
+            //    로그인 성공 후 랜딩(/)이 잠깐 보이는 "깜빡임"을 제거
+            const redirectTo = `${location.origin}${location.pathname}`;
+
             await supabase.auth.signInWithOAuth({
                 provider: "google",
                 options: {
-                    // redirectTo: "https://mautoflow-lab.netlify.app",  // Netlify 실제 URL
-                    redirectTo: "https://mautoflow.com",  // Cloudflare URL
+                    redirectTo,
                     queryParams: {
                         // 매번 계정 선택 화면 강제
                         prompt: "select_account"
