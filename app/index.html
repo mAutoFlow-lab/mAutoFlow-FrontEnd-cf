@@ -1767,7 +1767,7 @@ const HELP_TEXT_HTML = `
             
           // 로그인한 사용자만
           if (!window.currentUser) {
-            alert("Please log in to create a share link.");
+            alert("Please log in to use SHARE.\n(SHARE is available on Pro/Expert.)");
             return;
           }
 
@@ -2946,6 +2946,12 @@ const HELP_TEXT_HTML = `
 
         // 다운로드 타입에 따라 분기
         async function downloadDiagram() {
+          // ✅ 0) 로그인 먼저 체크 (로그아웃 상태면 업그레이드가 아니라 로그인 안내)
+          if (!window.currentUser) {
+            alert("Please log in to use DOWNLOAD.\n(DOWNLOAD is available on Pro/Expert.)");
+            return;
+          }
+            
           const tier = window.__planTier || (window.__isProUser ? "pro" : "free");
           const isFree = (tier === "free") && !window.__isTestAccount;
           if (isFree) {
@@ -4403,6 +4409,29 @@ const HELP_TEXT_HTML = `
                 if (!e.target.checked) return;
 
                 const nextMode = e.target.value; // all | defined
+
+                // ✅ 로그아웃 상태면 Defined 금지 (로그인 + Pro/Expert 필요 안내)
+                if (nextMode === "defined" && !window.currentUser) {
+                  // 1) 라디오 선택 되돌리기 (Defined 선택 무효화)
+                  macroMode = "all";
+            
+                  const allRadio = scope.querySelector('input[name="macroMode"][value="all"]');
+                  const defRadio = scope.querySelector('input[name="macroMode"][value="defined"]');
+                  if (defRadio) defRadio.checked = false;
+                  if (allRadio) allRadio.checked = true;
+            
+                  // 2) 입력창 잠그고 값 정리
+                  if (macroField) {
+                    macroField.disabled = true;
+                    macroField.value = "";
+                  }
+                  macroDefines = "";
+                  try { localStorage.removeItem("autoflow-macros"); } catch (_) {}
+            
+                  // 3) 경고(로그인 + Pro/Expert 필요)
+                  alert("Please log in to use Macro Defines (Defined mode).\n(Macro Defines is available on Pro/Expert.)");
+                  return;
+                }           
 
                 // ✅ Lite(=free) 계정에서는 Defined 금지
                 const tier = window.__planTier || (window.__isProUser ? "pro" : "free");
