@@ -1419,13 +1419,21 @@ const HELP_TEXT_HTML = `
           const upgradeBtn = document.getElementById("upgradeButton");
           if (!upgradeBtn) return;
 
+          // ✅ [ADD] 로그인 전이면 UPGRADE 버튼은 절대 노출하지 않음
+          const isLoggedIn = !!window.currentUser;
+          if (!isLoggedIn) {
+            upgradeBtn.style.display = "none";
+            upgradeBtn.classList.remove("upgrade-blink");
+            return;
+          }
+
           const forceBlink = !!opts.forceBlink;
 
           // tier 결정은 항상 동일 규칙으로
           const tier = window.__planTier || (window.__isProUser ? "pro" : "free");
           const isTest = !!window.__isTestAccount;
 
-          // ✅ 요구사항: Free/Pro에서는 표시, Expert/Test만 숨김
+          // ✅ Free/Pro에서는 표시, Expert/Test만 숨김
           const shouldShow = (tier !== "expert") && !isTest;
           upgradeBtn.style.display = shouldShow ? "inline-flex" : "none";
 
@@ -1434,10 +1442,6 @@ const HELP_TEXT_HTML = `
 
           if (!shouldShow) return;
 
-          // ✅ blink 규칙 (기능추가/삭제 없이 "현재 의도"만 단일화)
-          // - 에러(노드 초과 등) 상황은 forceBlink로 통일
-          // - Pro: nodeCount >= 200 이면 blink (요구사항)
-          // - Free: 기존처럼 "노드 제한 에러"에선 blink (기존 동작 유지)
           if (forceBlink) {
             upgradeBtn.classList.add("upgrade-blink");
             return;
@@ -3948,12 +3952,8 @@ const HELP_TEXT_HTML = `
                                 </p>`;
                             currentFunc.textContent = "";
 
-                            // Free 계정 일일 한도 초과 시에도 UPGRADE 버튼 블링크 (Pro 업그레이드 유도)
-                            const ub = document.getElementById("upgradeButton");
-                            if (ub && !isTestUser) {
-                                ub.style.display = "inline-flex";
-                                ub.classList.add("upgrade-blink");
-                            }
+                            // ✅ 로그인 상태에서만 업그레이드 유도 (표시/블링크는 단일 함수로)
+                            applyUpgradeButtonUI(null, { forceBlink: true });
                             return;
                         }
                     }
