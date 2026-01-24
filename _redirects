@@ -1,22 +1,5 @@
 # =========================
-# Legal pages → app SPA
-# =========================
-/pricing             /app/index.html   200
-/terms-of-service    /app/index.html   200
-/privacy-policy      /app/index.html   200
-
-# =========================
 # App SPA routing
 # =========================
 /app                 /app/             301
-/app/*               /app/index.html   200
 
-# =========================
-# Share routing
-# =========================
-/share/*             /app/index.html   200
-
-# =========================
-# Landing fallback
-# =========================
-/*                   /index.html       200
