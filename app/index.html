@@ -1273,7 +1273,7 @@ const HELP_TEXT_HTML = `
           <h3>16. Pricing Information</h3>
           <ul>
             <li>
-              <a href="/pricing" class="help-link" onclick="return navigateTo('/pricing', event)">
+              <a href="/app/pricing" class="help-link" onclick="return navigateTo('/app/pricing', event)">
                 Open Pricing page
               </a>
             </li>
@@ -1282,7 +1282,7 @@ const HELP_TEXT_HTML = `
           <h3>17. Terms of Service</h3>
           <ul>
             <li>
-              <a href="/terms-of-service" class="help-link" onclick="return navigateTo('/terms-of-service', event)">
+              <a href="/app/terms-of-service" class="help-link" onclick="return navigateTo('/app/terms-of-service', event)">
                 Open Terms of Service page
               </a>
             </li>
@@ -1291,7 +1291,7 @@ const HELP_TEXT_HTML = `
           <h3>18. Privacy Policy</h3>
           <ul>
             <li>
-              <a href="/privacy-policy" class="help-link" onclick="return navigateTo('/privacy-policy', event)">
+              <a href="/app/privacy-policy" class="help-link" onclick="return navigateTo('/app/privacy-policy', event)">
                 Open Privacy Policy page
               </a>
             </li>
@@ -1967,12 +1967,12 @@ const HELP_TEXT_HTML = `
 
         function isLegalPath(pathname) {
           return (
-            pathname === "/pricing" ||
-            pathname === "/terms-of-service" ||
-            pathname === "/privacy-policy" ||
-            // 이전 경로 호환 (남겨둬도 무방)
-            pathname === "/terms" ||
-            pathname === "/privacy"
+            pathname === "/app/pricing" ||
+            pathname === "/app/terms-of-service" ||
+            pathname === "/app/privacy-policy" ||
+            // (선택) 이전 경로 호환을 app 하위로만 유지
+            pathname === "/app/terms" ||
+            pathname === "/app/privacy"
           );
         }
 
@@ -1982,9 +1982,9 @@ const HELP_TEXT_HTML = `
         // ============================
         function getLegalPath() {
           const p = window.location.pathname.replace(/\/+$/, "") || "/";
-          if (p === "/pricing") return "pricing";
-          if (p === "/terms-of-service") return "terms";
-          if (p === "/privacy-policy") return "privacy";
+          if (p === "/app/pricing") return "pricing";
+          if (p === "/app/terms-of-service") return "terms";
+          if (p === "/app/privacy-policy") return "privacy";
           return null;
         }
 
@@ -5281,9 +5281,9 @@ void main(void)
       </div>
 
       <div class="footer-right" id="footerNav">
-        <a class="footer-link" href="/pricing" onclick="return navigateTo('/pricing', event)">Pricing</a>
-        <a class="footer-link" href="/terms-of-service" onclick="return navigateTo('/terms-of-service', event)">Terms</a>
-        <a class="footer-link" href="/privacy-policy" onclick="return navigateTo('/privacy-policy', event)">Privacy</a>
+        <a class="footer-link" href="/app/pricing" onclick="return navigateTo('/app/pricing', event)">Pricing</a>
+        <a class="footer-link" href="/app/terms-of-service" onclick="return navigateTo('/app/terms-of-service', event)">Terms</a>
+        <a class="footer-link" href="/app/privacy-policy" onclick="return navigateTo('/app/privacy-policy', event)">Privacy</a>
       </div>
     </footer>
 
