@@ -1965,30 +1965,33 @@ const HELP_TEXT_HTML = `
         // (navigateTo 위쪽 아무데나 - 전역)
         let __returnToEditorPath = "/app/";
 
+        function normalizePath(p) {
+          // trailing slash 제거
+          p = (p || "/").replace(/\/+$/, "") || "/";
+          // /app prefix가 있으면 제거해서 내부 라우팅 키만 남김
+          if (p.startsWith("/app/")) return p.slice(4); // "/pricing" 같은 형태로
+          return p;
+        }
+
         function isLegalPath(pathname) {
+          const p = normalizePath(pathname);
           return (
-            pathname === "/app/pricing" ||
-            pathname === "/app/terms-of-service" ||
-            pathname === "/app/privacy-policy" ||
-            // (선택) 이전 경로 호환을 app 하위로만 유지
-            pathname === "/app/terms" ||
-            pathname === "/app/privacy"
+            p === "/pricing" ||
+            p === "/terms-of-service" ||
+            p === "/privacy-policy" ||
+            p === "/terms" ||
+            p === "/privacy"
           );
         }
 
-
-        // ============================
-        //  LEGAL 페이지 라우팅 (/pricing, /terms-of-service, /privacy-policy)
-        // ============================
         function getLegalPath() {
-          const p = window.location.pathname.replace(/\/+$/, "") || "/";
-          if (p === "/app/pricing") return "pricing";
-          if (p === "/app/terms-of-service") return "terms";
-          if (p === "/app/privacy-policy") return "privacy";
+          const p = normalizePath(window.location.pathname);
+          if (p === "/pricing") return "pricing";
+          if (p === "/terms-of-service") return "terms";
+          if (p === "/privacy-policy") return "privacy";
           return null;
         }
-
-        // 
+                // 
         function navigateTo(path, e) {
           if (e) e.preventDefault();
 
