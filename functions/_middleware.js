@@ -13,13 +13,20 @@ export async function onRequest({ request, next }) {
 
   const p = url.pathname;
 
+  // ✅ legal은 app SPA로 rewrite
+  const LEGAL_PATHS = new Set(["/terms-of-service", "/privacy-policy"]);
+  if (LEGAL_PATHS.has(p)) {
+    url.pathname = "/app/index.html";
+    return fetch(url.toString(), request);
+  }
+
   // app 영역
   if (p === "/app/" || p.startsWith("/app/") || p.startsWith("/share/")) {
     url.pathname = "/app/index.html";
     return fetch(url.toString(), request);
   }
 
-  // landing 영역 (pricing/terms/privacy 포함)
+  // landing 영역 (pricing 등)
   url.pathname = "/index.html";
   return fetch(url.toString(), request);
 }
