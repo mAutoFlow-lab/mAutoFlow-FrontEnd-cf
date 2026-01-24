@@ -1,13 +1,25 @@
 export async function onRequest({ request, next }) {
   const url = new URL(request.url);
 
-  // ✅ pages.dev로 들어온 요청만 301로 커스텀 도메인으로 이동
+  // pages.dev → mautoflow.com 301
   if (url.hostname === "mautoflow-frontend-cf.pages.dev") {
     url.hostname = "mautoflow.com";
     url.protocol = "https:";
     return Response.redirect(url.toString(), 301);
   }
 
-  // 커스텀 도메인(mautoflow.com)으로 들어오면 정상 처리
-  return next();
+  const res = await next();
+  if (res.status !== 404) return res;
+
+  const p = url.pathname;
+
+  // app 영역
+  if (p === "/app/" || p.startsWith("/app/") || p.startsWith("/share/")) {
+    url.pathname = "/app/index.html";
+    return fetch(url.toString(), request);
+  }
+
+  // landing 영역 (pricing/terms/privacy 포함)
+  url.pathname = "/index.html";
+  return fetch(url.toString(), request);
 }
