@@ -8,17 +8,22 @@ export async function onRequest({ request, next }) {
     return Response.redirect(url.toString(), 301);
   }
 
-  const res = await next();
-  if (res.status !== 404) return res;
-
   const p = url.pathname;
 
-  // ✅ legal은 app SPA로 rewrite
-  const LEGAL_PATHS = new Set(["/terms-of-service", "/privacy-policy"]);
-  if (LEGAL_PATHS.has(p)) {
+  // ✅ (추가) LEGAL 3종은 무조건 app/index.html로 서빙
+  if (
+    p === "/pricing" ||
+    p === "/terms-of-service" ||
+    p === "/privacy-policy" ||
+    p === "/terms" ||            // 호환용
+    p === "/privacy"             // 호환용
+  ) {
     url.pathname = "/app/index.html";
     return fetch(url.toString(), request);
   }
+
+  const res = await next();
+  if (res.status !== 404) return res;
 
   // app 영역
   if (p === "/app/" || p.startsWith("/app/") || p.startsWith("/share/")) {
@@ -26,7 +31,7 @@ export async function onRequest({ request, next }) {
     return fetch(url.toString(), request);
   }
 
-  // landing 영역 (pricing 등)
+  // landing 영역
   url.pathname = "/index.html";
   return fetch(url.toString(), request);
 }
