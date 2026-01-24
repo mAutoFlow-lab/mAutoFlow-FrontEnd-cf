@@ -2279,12 +2279,23 @@ const HELP_TEXT_HTML = `
               text-align: left;   /* ✅ 추가: 상위 text-align:center 상속 차단 */
             }
             .legal-doc h1{ font-size: 34px; margin: 6px 0 10px; text-align:left; }
-            .legal-doc .meta{ text-align:left; color:#6b7280; font-size: 13px; margin-bottom: 18px; }
+            .legal-doc .meta{ text-align:left; color: var(--toolbar-muted); font-size: 13px; margin-bottom: 18px; }
             .legal-doc h2{ font-size: 18px; margin: 22px 0 10px; text-align:left; }
-            .legal-doc p, .legal-doc li{ line-height: 1.75; color:#111827; text-align:left; }
+            .legal-doc { color: var(--toolbar-text); }
+            .legal-doc p, .legal-doc li{ line-height: 1.75; color: var(--toolbar-text); text-align:left; }
             .legal-doc ul{ margin: 8px 0 0 20px; }
-            .legal-doc .box{ margin-top: 14px; border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px 14px; background: #fafafa; color:#374151; font-size: 13px; line-height: 1.65; text-align:left; }
-            .legal-doc .muted{ color:#6b7280; }
+            .legal-doc .box{
+              margin-top: 14px;
+              border: 1px solid rgba(255,255,255,0.12);
+              border-radius: 12px;
+              padding: 12px 14px;
+              background: rgba(255,255,255,0.06);
+              color: var(--toolbar-text);
+              font-size: 13px;
+              line-height: 1.65;
+              text-align:left;
+            }
+            .legal-doc .muted{ color: var(--toolbar-muted); }
           </style>
 
           <div class="container">
@@ -2399,8 +2410,13 @@ const HELP_TEXT_HTML = `
             .legal-doc ul{ margin: 8px 0 0 20px; }
             .legal-doc .box{ margin-top: 14px; border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px 14px; background: #fafafa; color:#374151; font-size: 13px; line-height: 1.65; text-align:left; }
             .legal-doc table{ width:100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
-            .legal-doc th, .legal-doc td{ border: 1px solid #e5e7eb; padding: 10px; vertical-align: top; line-height: 1.55; }
-            .legal-doc th{ background:#f9fafb; text-align:left; font-weight:700; width: 20%; }
+            .legal-doc th, .legal-doc td{ border: 1px solid rgba(255,255,255,0.12); padding: 10px; vertical-align: top; line-height: 1.55; }
+            .legal-doc th{
+              background: rgba(255,255,255,0.06);
+              text-align:left;
+              font-weight:700;
+              width: 20%;
+            }
             .legal-doc .muted{ color:#6b7280; }
           </style>
 
