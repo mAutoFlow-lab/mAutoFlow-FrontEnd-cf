@@ -1,12 +1,12 @@
-# =========================
-# App SPA routing
-# =========================
-/app              /app/               301
-/app/*            /app/     200
+# exact redirects first (faster)
+/pricing          /app/pricing           301
+/terms-of-service /app/terms-of-service  301
+/privacy-policy   /app/privacy-policy    301
 
-/pricing          /app/pricing        301
-/terms-of-service /app/terms-of-service 301
-/privacy-policy   /app/privacy-policy 301
+# app routing
+/app              /app/                  301
+/app/*            /app/                  200
 
-/*               /          200
+# landing fallback
+/*                /                      200
 
