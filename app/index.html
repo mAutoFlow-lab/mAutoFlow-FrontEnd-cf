@@ -2565,6 +2565,12 @@ const HELP_TEXT_HTML = `
           });
         }
 
+        function handleRoute() {
+          console.log("[ROUTE]", {
+            pathname: window.location.pathname,
+            normalized: normalizePath(window.location.pathname),
+            legal: getLegalPath(),
+          });
 
         function handleRoute() {
           // 1) share 우선
