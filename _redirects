@@ -2,11 +2,11 @@
 # App SPA routing
 # =========================
 /app              /app/               301
-/app/*            /app/index.html     200
+/app/*            /app/     200
 
 /pricing          /app/pricing        301
 /terms-of-service /app/terms-of-service 301
 /privacy-policy   /app/privacy-policy 301
 
-/*               /index.html          200
+/*               /          200
 
