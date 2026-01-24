@@ -7,6 +7,9 @@
 /app              /app/                  301
 /app/*            /app/                  200
 
+# allow static assets (DO NOT FALLBACK)
+/assets/*         /assets/:splat         200
+
 # landing fallback
 /*                /                      200
 
