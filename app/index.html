@@ -2131,10 +2131,22 @@ const HELP_TEXT_HTML = `
         const PRICING_HTML = `
         <div class="legal-doc pricing-doc">
           <style>
-            .legal-doc{ font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+            .legal-doc{
+              font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+              color: var(--toolbar-text); /* ✅ 다크에서 기본 글자색 보장 */
+            }
             .legal-doc .container{ max-width: 920px; margin: 0 auto; padding: 24px 20px 30px; text-align: left; }
-            .legal-doc h1{ font-size: 36px; margin: 6px 0 6px; text-align:left; }
-            .legal-doc .sub{ text-align:left; color:#6b7280; margin: 0 0 18px; }
+            .legal-doc h1{
+              font-size: 36px;
+              margin: 6px 0 6px;
+              text-align:left;
+              color: var(--toolbar-text); /* ✅ Pricing 타이틀 */
+            }
+            .legal-doc .sub{
+              text-align:left;
+              color: color-mix(in srgb, var(--toolbar-text) 60%, transparent); /* ✅ 테마 따라 부제 색 */
+              margin: 0 0 18px;
+            }
             .legal-doc .grid{ display:flex; flex-direction:column; gap: 16px; margin-top: 18px; }
 
             .legal-doc .plan{
