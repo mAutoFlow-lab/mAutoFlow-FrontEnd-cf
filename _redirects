@@ -1,6 +1,3 @@
-# pages.dev → mautoflow.com 강제 통합
-https://mautoflow-frontend-cf.pages.dev/*  https://mautoflow.com/:splat  301
-
 # 기존(예시: 너 스샷 방향)
 /pricing            /app/            200
 /terms-of-service   /app/            200
