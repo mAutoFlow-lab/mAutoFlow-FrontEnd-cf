@@ -2141,8 +2141,8 @@ const HELP_TEXT_HTML = `
             }
             .legal-doc .sub{
               text-align:left;
+              color: color-mix(in srgb, var(--toolbar-text) 60%, transparent); /* ✅ 테마 따라 부제 색 */
               margin: 0 0 18px;
-              color: var(--toolbar-muted);
             }
             .legal-doc .grid{ display:flex; flex-direction:column; gap: 16px; margin-top: 18px; }
 
