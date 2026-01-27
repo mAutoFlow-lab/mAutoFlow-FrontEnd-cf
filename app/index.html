@@ -1487,7 +1487,8 @@ const HELP_TEXT_HTML = `
                     .from("subscriptions")
                     .select("plan_tier, plan_name, status")
                     .eq("user_id", user.id)
-                    .eq("status", "active")
+                    .eq("env", LEMON_MODE)
+                    .in("status", ["active","on_trial","cancelled"]) // (선택) 조회범위 확대
                     .order("created_at", { ascending: false })
                     .limit(1)
                     .maybeSingle();
