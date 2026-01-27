@@ -807,14 +807,9 @@
           const planTier =
             (window.__planTier || window.currentUserPlan || "free").toLowerCase(); // "free" | "pro" | "expert"
 
-          // ✅ free -> pro 결제, pro -> expert 결제, expert면 안내
-          if (planTier === "pro") {
-            openCheckoutByTier("expert");
-            return;
-          }
-
-          if (planTier === "expert") {
-            alert("You are already on the Expert plan.");
+          // ✅ free는 checkout, pro/expert는 Customer Portal로 보내서 “플랜 변경(차액)” 처리
+          if (planTier === "pro" || planTier === "expert") {
+            openBillingPortal();
             return;
           }
 
@@ -840,6 +835,55 @@
           const sep = baseUrl.includes("?") ? "&" : "?";
           const url = `${baseUrl}${sep}checkout[custom][user_id]=${encodeURIComponent(user.id)}`;
           window.location.href = url;
+        }
+
+        async function openBillingPortal() {
+          if (!PAYMENT_ENABLED) {
+            alert("Upgrade (Coming Soon)\nPayments are currently being enabled.");
+            return;
+          }
+
+          // 1) access_token 확보 (share 만들 때랑 동일 패턴)
+          let accessToken = null;
+          try {
+            const session = supabase.auth.getSession
+              ? (await supabase.auth.getSession()).data.session
+              : null;
+            if (session?.access_token) accessToken = session.access_token;
+          } catch (e) {}
+
+          if (!accessToken) {
+            alert("Your login session has expired. Please log in again.");
+            return;
+          }
+
+          // 2) 백엔드에서 portal URL 받아서 이동
+          try {
+            const res = await fetch(`${API_BASE}/api/billing/portal`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                access_token: accessToken,
+                return_url: window.location.href,
+              }),
+            });
+
+            if (!res.ok) {
+              const t = await res.text();
+              alert("Failed to open billing portal.\n" + t);
+              return;
+            }
+
+            const data = await res.json();
+            if (!data?.url) {
+              alert("Portal URL missing from server response.");
+              return;
+            }
+
+            window.location.href = data.url;
+          } catch (e) {
+            alert("Failed to open billing portal.\n" + (e?.message || e));
+          }
         }
 
         function getMaxEdgesByPlan() {
