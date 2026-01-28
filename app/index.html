@@ -1920,8 +1920,8 @@ const HELP_TEXT_HTML = `
         // ============================
 
         function getShareIdFromPath() {
-          // 예: /share/4e9203e9-0602-42d4-9016-b1b9a8a04ecc
-          const m = window.location.pathname.match(/^\/share\/([0-9a-fA-F-]{36})\/?$/);
+          // ✅ /share/<id>  또는  /app/share/<id> 둘 다 허용
+          const m = window.location.pathname.match(/^(?:\/app)?\/share\/([0-9a-fA-F-]{36})\/?$/);
           return m ? m[1] : null;
         }
 
