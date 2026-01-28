@@ -10,6 +10,9 @@
 # allow static assets (DO NOT FALLBACK)
 /assets/*         /assets/:splat         200
 
+# share link should open app share viewer
+/share/*          /app/share/:splat      302
+
 # landing fallback
 /*                /                      200
 
